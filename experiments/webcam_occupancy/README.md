@@ -1,164 +1,175 @@
-# Lenz — Open-Vocabulary Video Intelligence & Spatial Analytics Prototype
+# Lenz — Multi-Class Video Analytics & Occupancy Prototype
 
-This folder contains the active, local proof-of-concept for **Lenz — AI-Powered Intelligent Video Surveillance**.
+This folder contains the standalone, local proof-of-concept (PoC) for **Lenz — Make Every Camera Intelligent with AI**.
 
-**Important Architectural Change:** The previous YOLO/COCO object detection pipeline has been completely decommissioned from active inference. Lenz now uses an **Open-Vocabulary Computer Vision Architecture** powered by Hugging Face Transformers, Apple Silicon MPS hardware acceleration, Segment Anything (SAM 2.1), and zero-shot Vision-Language classification (OpenAI CLIP).
-
----
-
-## 1. Root Cause: Why Previous Pipeline Behaved as Human-Centric
-
-Audits of the previous system identified why detections appeared human-only and empty spaces were incorrectly represented:
-
-1. **COCO Class ID Hardcoding & Bias:**
-   Fixed integer class IDs (such as COCO class 0 = `person`) and narrow post-processing filters silently favored person bounding boxes over subtle or diverse workplace objects, vehicles, and tabletop items.
-
-2. **Absence of Open-Vocabulary Text Query Grounding:**
-   Closed-vocabulary detectors cannot accept descriptive English phrases (e.g., *"rubbish on a tabletop"*, *"dishes on a tabletop"*, *"seated person"*). Anything outside fixed categories was dropped.
-
-3. **Faulty "Empty-Space" Heuristics:**
-   Empty space was previously treated as if it were a visual class. In real-world physical surveillance, empty space is **not an object class**—it is a **state of an explicitly configured physical facility** (a parking slot, dining table, or floor region). Background pixels, empty sky, ceilings, and unmonitored floors must never be labeled as available spaces.
+It tests real-time multi-class object detection, ByteTrack multi-object tracking, spatial zone analytics, and automated operational rules using your local MacBook webcam or pre-recorded video files.
 
 ---
 
-## 2. New Open-Vocabulary Model Architecture
+## 1. Root Cause: Why Previous Program Detected Only Humans
 
-| Component | Active Model ID | Purpose & Capabilities |
-| :--- | :--- | :--- |
-| **Open-Vocabulary Detector** | `IDEA-Research/grounding-dino-tiny` | Zero-shot object detection driven by runtime natural language prompts. Eliminates fixed integer class lists. |
-| **Pixel Segmenter & Tracker** | `facebook/sam2.1-hiera-tiny` | Refines candidate bounding boxes into pixel-level binary masks for vehicle parking slots, tabletops, and human footprints. |
-| **Table State Classifier** | `openai/clip-vit-base-patch32` | Zero-shot Vision-Language ensemble classification on cropped tabletops: `occupied`, `unoccupied_clean`, `unoccupied_dirty`, `uncertain`. |
-| **Spatial Multi-Object Tracker** | `SpatialTracker` (IoU + Centroid) | Independent, deterministic association engine assigning persistent track IDs (`#ID`) and live dwell times. Zero closed-source/YOLO tracker dependencies. |
-| **Hardware Accelerator** | Apple Silicon **MPS** (`torch.backends.mps`) | Hardware-accelerated Metal Performance Shaders on macOS, with seamless fallback to CPU. |
+The previous prototype contained hardcoded logic that actively discarded all non-human objects:
 
----
-
-## 3. Configurable Prompt Management (`config/detection_prompts.json`)
-
-Prompt definitions are decoupled from code in `config/detection_prompts.json`:
-
-```json
-{
-  "dino_text_query": "person . seated person . standing person . dining table . chair . occupied chair . car . motorcycle . bicycle . bus . truck . backpack . handbag . suitcase . bottle . cup . laptop . phone . rubbish on a tabletop . dishes on a tabletop .",
-  "categories": {
-    "person": { "threshold": 0.28, "canonical_name": "person" },
-    "vehicle": { "threshold": 0.28, "canonical_name": "vehicle" },
-    "dining_table": { "threshold": 0.25, "canonical_name": "dining table" },
-    "tableware": { "threshold": 0.22, "canonical_name": "tableware" },
-    "rubbish": { "threshold": 0.20, "canonical_name": "rubbish" },
-    "belongings": { "threshold": 0.25, "canonical_name": "bag" }
-  }
-}
-```
-
-New candidate phrases can be tested at runtime via `--prompts path/to/prompts.json` without modifying any Python code.
-
----
-
-## 4. Physical Spatial Grounding Rules (The Empty-Space Mandate)
-
-Lenz enforces strict physical grounding rules across all zones:
-
-* **Floor / Restricted / Queue Zones:**
-  Evaluated using the object's **ground-contact feet anchor** (`bottom_center` of the bounding box / mask). If a tall person's head/torso enters the camera's line-of-sight against the sky or wall while their feet remain outside the polygon, the zone remains **NOT OCCUPIED**.
-* **Dining Tables:**
-  Evaluated using table surface overlap and CLIP zero-shot classification:
-  * **Occupied:** Guest seated at table or CLIP ensemble detects diners.
-  * **Not Occupied (Clean):** Empty table with clean surface, ready for customers.
-  * **Not Occupied (Needs Cleaning):** Empty table with uncleared dishes, glasses, or food rubbish.
-* **Smart Parking Bays:**
-  Evaluated using SAM vehicle mask / bounding box polygon overlap:
-  * $\ge 30\%$ overlap $\rightarrow$ **OCCUPIED**.
-  * $10\%$ to $30\%$ partial overlap $\rightarrow$ **UNCERTAIN** (requires inspection).
-  * $0\%$ overlap $\rightarrow$ **AVAILABLE**.
-
----
-
-## 5. Setup & Launch Instructions on macOS
-
-### Step 1: Activate Virtual Environment
-```bash
-cd /Users/amanrajsharma/Desktop/Projects_Final/Lenz
-source smartspace-ml/venv/bin/activate
-```
-
-### Step 2: Install / Verify Dependencies
-```bash
-pip install -r smartspace-ml/requirements.txt
-```
-
-### Step 3: Model Weight Loading Behavior
-The application automatically detects cached Hugging Face model weights in `~/.cache/huggingface/hub/`.
-To download weights locally for offline execution:
-```bash
-huggingface-cli download IDEA-Research/grounding-dino-tiny
-huggingface-cli download facebook/sam2.1-hiera-tiny
-huggingface-cli download openai/clip-vit-base-patch32
-```
-*Note: In offline test environments where weights are not yet cached, Lenz automatically activates an offline synthetic engine to allow unit tests, dry-runs, and diagnostic evaluation without network errors.*
-
----
-
-## 6. Execution Commands
-
-### A. Live Webcam Feed
-```bash
-python experiments/webcam_occupancy/webcam_test.py
-```
-
-### B. Prerecorded Video File
-```bash
-python experiments/webcam_occupancy/webcam_test.py --source smartspace-ml/sample.mp4
-```
-
-### C. Specific Operational Modes
-```bash
-# Focus on Smart Parking Bay monitoring
-python experiments/webcam_occupancy/webcam_test.py --mode parking
-
-# Focus on Dining Table occupancy & cleanliness
-python experiments/webcam_occupancy/webcam_test.py --mode table
-
-# Focus on Restricted Area intrusion
-python experiments/webcam_occupancy/webcam_test.py --mode restricted
-
-# Focus on Queue congestion
-python experiments/webcam_occupancy/webcam_test.py --mode queue
-```
-
-### D. Single-Image Diagnostic Analysis
-Performs open-vocabulary detection, SAM mask generation, and CLIP state classification on an individual image, saving annotated output and structured telemetry:
-```bash
-python experiments/webcam_occupancy/webcam_test.py --diagnostics-image smartspace-ml/evidence/sample_frame.jpg
-```
-Output files saved:
-* `evidence/diagnostics_output.jpg`
-* `evidence/diagnostics.json`
-
-### E. Diagnostic Headless Run (CI / Automated Testing)
-```bash
-python experiments/webcam_occupancy/webcam_test.py --source smartspace-ml/sample.mp4 --max-frames 20 --headless --diagnostics
-```
-
----
-
-## 7. Running Automated Tests
-
-Run the complete test suite verifying regression scenarios, open-vocabulary pipelines, spatial grounding, and rule engine evaluations:
-
-```bash
-python -m pytest tests/ smartspace-ml/tests/ experiments/webcam_occupancy/ -v
-```
-
----
-
-## 8. macOS Camera Permissions & Troubleshooting
-
-If `Cannot open video source: Webcam #0` appears on macOS:
-
-1. **System Permissions:** Open **System Settings $\rightarrow$ Privacy & Security $\rightarrow$ Camera**, and verify that your terminal application (Terminal, iTerm, VS Code, or Cursor) has camera access enabled.
-2. **Camera In Use:** Close any applications actively using the camera (FaceTime, Zoom, Google Meet, Photo Booth).
-3. **External / Continuity Camera:** If using an iPhone Continuity Camera or external USB webcam, select index 1 or 2:
-   ```bash
-   python experiments/webcam_occupancy/webcam_test.py --camera 1
+1. **Explicit Class Filter in Inference Call:**
+   The inference call in `webcam_test.py` was executed with `classes=[0]`:
+   ```python
+   # Previous faulty code:
+   results = model.predict(source=frame, classes=[0], ...)
    ```
+   In the COCO dataset, class index `0` represents exclusively `person`. This argument caused YOLO to discard cars, bicycles, backpacks, laptops, chairs, bottles, and all other 79 COCO classes at inference time.
+
+2. **Single-Class Data Structures and Rendering:**
+   The downstream data structures and HUD display logic were hardcoded for person detections only (`person_detections`), labeling every detected box with hardcoded string `"person"`.
+
+**Fix Applied:**
+- Removed `classes=[0]` to run inference across all 80 pretrained COCO classes.
+- Switched to the state-of-the-art `yolo11n.pt` model (with `yolov8n.pt` local fallback).
+- Integrated ByteTrack (`bytetrack.yaml`) for multi-object tracking, assigning persistent IDs (`#ID`) and tracking dwell times.
+- Added multi-class color coding, class-by-class live headcount counters, and spatial-temporal rule evaluations across vehicles, people, luggage, electronics, and furniture.
+
+---
+
+## 2. Supported Object Classes
+
+The model uses real pretrained COCO weights supporting **80 object classes**, including:
+
+* **People:** `person`
+* **Vehicles:** `car`, `motorcycle`, `bicycle`, `bus`, `truck`, `airplane`, `boat`, `train`
+* **Personal Belongings & Luggage:** `backpack`, `handbag`, `suitcase`, `umbrella`
+* **Workplace & Electronics:** `laptop`, `cell phone`, `mouse`, `keyboard`, `tv`, `remote`, `book`
+* **Furniture:** `chair`, `bench`, `couch`, `dining table`, `bed`
+* **Tableware & Containers:** `bottle`, `cup`, `wine glass`, `bowl`, `fork`, `knife`, `spoon`
+
+*(A complete list of all 80 classes is accessible via `model.names`.)*
+
+---
+
+## 3. Implemented Lenz Use Cases
+
+The prototype implements the core rules specified in the Lenz architecture:
+
+| Lenz Use Case | Status | How It Is Implemented in Prototype |
+| :--- | :---: | :--- |
+| **A. Person & Vehicle Detection** | **Working** | Simultaneous multi-class bounding boxes, class labels, confidence %, and live breakdown counts. |
+| **B. Multi-Object Tracking** | **Working** | ByteTrack assigns persistent IDs (`#ID`) across frames, calculating live dwell duration (`dwell: X.Xs`). |
+| **C. Zone-Based Occupancy** | **Working** | Rectangular monitoring zone with temporal debounce smoothing to avoid flicker (`OCCUPIED` / `NOT OCCUPIED` / `UNCERTAIN`). |
+| **D. Smart Parking Bay Monitoring** | **Working** | Monitors vehicle classes (`car`, `truck`, `bus`, `motorcycle`) over designated parking bay polygons (`AVAILABLE` vs `OCCUPIED`). |
+| **E. Crowd Density & Surge** | **Working** | Headcount threshold monitoring. Triggers `CROWD THRESHOLD REACHED` alert banner when count $\ge$ threshold. |
+| **F. Queue / Waiting Area** | **Working** | Tracks persons within a queue polygon and flags congestion if dwell exceeds configured limit. |
+| **G. Restricted Area Intrusion** | **Working** | Immediate `CRITICAL: RESTRICTED INTRUSION` banner when a person is detected inside staff-only / sensitive zones. |
+| **H. Loitering & Unattended Items** | **Working** | **Loitering:** Flags tracked persons remaining in sensitive zones beyond duration limit.<br/>**Unattended Object:** Flags bags/laptops left without a person nearby for $>10\text{s}$. |
+| **I. Video File Input** | **Working** | Accepts pre-recorded MP4/AVI videos via `--source` for repeatable offline validation without a webcam. |
+
+---
+
+## 4. Exact Run Instructions for macOS (MacBook)
+
+Run these exact commands in your macOS Terminal:
+
+### Step 1: Navigate to the experiment folder
+```bash
+cd /Users/amanrajsharma/Desktop/Projects_Final/Lenz/experiments/webcam_occupancy
+```
+
+### Step 2: Create a virtual environment
+```bash
+python3 -m venv .venv
+```
+
+### Step 3: Activate the virtual environment
+```bash
+source .venv/bin/activate
+```
+
+### Step 4: Upgrade pip and install dependencies
+```bash
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+*(Note: If you have already configured `smartspace-ml/venv`, you can also run directly with `../../smartspace-ml/venv/bin/python webcam_test.py`.)*
+
+---
+
+## 5. Launching the Application
+
+### A. Run Live Webcam (Default Mode — All Features Active)
+```bash
+python webcam_test.py
+```
+This opens a live window showing:
+- Real-time video with color-coded bounding boxes.
+- Persistent track IDs (`#ID`) and dwell times.
+- Active spatial zones (Table, Restricted Area, Loading Bay).
+- Top HUD with FPS and active alert banners (Intrusion, Crowd Surge, Unattended Object).
+- Bottom telemetry bar with per-class detection counts.
+
+### B. Keyboard Controls During Live Preview
+While the preview window is focused:
+* **`q`** or **`ESC`**: Exit application and release webcam cleanly.
+* **`m`**: Cycle operational modes (`all` $\rightarrow$ `table` $\rightarrow$ `parking` $\rightarrow$ `restricted` $\rightarrow$ `queue`).
+* **`t`**: Toggle track ID and dwell time labels on/off.
+* **`z`**: Toggle spatial zone overlays on/off.
+* **`+`** / **`-`**: Increase or decrease detection confidence threshold in real time.
+
+### C. Specific Operational Presets
+```bash
+# Table Occupancy Mode
+python webcam_test.py --mode table
+
+# Smart Parking Mode (detects cars, trucks, motorcycles in bays)
+python webcam_test.py --mode parking
+
+# Restricted Zone Intrusion Mode
+python webcam_test.py --mode restricted
+
+# Queue & Waiting Area Congestion Mode
+python webcam_test.py --mode queue
+```
+
+### D. Run Against a Pre-recorded Video File
+```bash
+python webcam_test.py --source ../../smartspace-ml/sample.mp4
+```
+
+### E. Run on Alternate Camera (External USB or iPhone Continuity Camera)
+```bash
+python webcam_test.py --camera 1
+```
+
+### F. Filter Specific Classes
+```bash
+# Only track people, cars, and laptops
+python webcam_test.py --classes person,car,laptop
+```
+
+### G. Run Headless Automated Test (Server / No Display)
+```bash
+python webcam_test.py --source ../../smartspace-ml/sample.mp4 --headless --max-frames 50
+```
+
+---
+
+## 6. Troubleshooting on macOS
+
+### 1. Camera does not open (`Cannot open Camera #0`)
+* **macOS Permissions:** Open **System Settings** $\rightarrow$ **Privacy & Security** $\rightarrow$ **Camera**, and ensure your terminal app (**Terminal**, **iTerm2**, **VS Code**, or **Cursor**) is toggled **ON**.
+* **Camera Busy:** Close any application using the camera (Zoom, FaceTime, Google Meet, Photo Booth).
+* **Multiple Cameras:** If you have an external monitor, USB camera, or iPhone Continuity Camera connected, try `--camera 1` or `--camera 2`.
+
+### 2. CPU Performance / Framerate
+* The prototype defaults to `yolo11n.pt` (~5.4 MB) which runs at **25–35+ FPS on Apple Silicon CPU**.
+* If you experience lag on older Intel MacBooks, increase confidence to `--conf 0.45` or filter target classes with `--classes person,car,laptop`.
+
+### 3. Model Weights Resolution
+* `yolo11n.pt` and `yolov8n.pt` are bundled directly inside this folder.
+* If running offline in a restricted environment, the script will automatically load the local file without attempting network access.
+
+---
+
+## 7. Known Limitations & Scope Boundaries
+
+* **Posture Estimation:** 2D bounding-box detection indicates presence in a zone, but cannot confirm if a person is seated vs. standing without a dedicated pose/keypoint model.
+* **Camera Viewing Angle:** Laptop webcams view horizontally or upwards, whereas CCTV cameras mount overhead. Real-world parking and crowd density monitoring require calibrated overhead angles.
+* **No Intent Inference:** Alerts (such as loitering or unattended items) are rule-based duration checks requiring human operator review; Lenz never claims to infer theft or criminal intent.
+* **Architectural Boundaries:** RTSP/ONVIF camera registration, PostgreSQL storage, Redis message brokering, and cloud dashboards belong to the broader Lenz architecture and are not part of this isolated prototype.

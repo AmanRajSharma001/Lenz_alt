@@ -1,0 +1,116 @@
+{
+  "timestamp": 1792877915.477451,
+  "frame_width": 1280,
+  "frame_height": 720,
+  "detector_model_id": "IDEA-Research/grounding-dino-tiny",
+  "segmentation_model_id": "facebook/sam2.1-hiera-tiny",
+  "clip_model_id": "openai/clip-vit-base-patch32",
+  "device": "mps",
+  "is_mock_mode": true,
+  "inference_latency_ms": 4.52,
+  "fps_estimate": 221.0,
+  "raw_candidates_count": 4,
+  "filtered_candidates_count": 4,
+  "text_query": "person . seated person . standing person . dining table . chair . occupied chair . car . motorcycle . bicycle . bus . truck . backpack . handbag . suitcase . bottle . cup . laptop . phone . rubbish on a tabletop . dishes on a tabletop .",
+  "detections": [
+    {
+      "track_id": 1,
+      "label": "car",
+      "confidence": 0.93,
+      "bbox": [
+        895.0,
+        344.0,
+        912.0,
+        366.0
+      ],
+      "dwell_seconds": 0.9,
+      "mask_present": true
+    },
+    {
+      "track_id": 2,
+      "label": "car",
+      "confidence": 0.93,
+      "bbox": [
+        880.0,
+        323.0,
+        902.0,
+        352.0
+      ],
+      "dwell_seconds": 0.9,
+      "mask_present": true
+    },
+    {
+      "track_id": 3,
+      "label": "car",
+      "confidence": 0.93,
+      "bbox": [
+        237.0,
+        322.0,
+        260.0,
+        372.0
+      ],
+      "dwell_seconds": 0.9,
+      "mask_present": true
+    },
+    {
+      "track_id": 4,
+      "label": "person",
+      "confidence": 0.91,
+      "bbox": [
+        587.0,
+        286.0,
+        693.0,
+        506.0
+      ],
+      "dwell_seconds": 0.9,
+      "mask_present": true
+    }
+  ],
+  "zones": {
+    "zone_table": {
+      "name": "Table Area",
+      "type": "table",
+      "state": "NOT OCCUPIED",
+      "count": 0,
+      "occupancy_duration_s": 0.0,
+      "details": {
+        "clip_prediction": "unoccupied_clean",
+        "clip_confidence": 0.92,
+        "clip_probabilities": {
+          "unoccupied_clean": 0.92,
+          "occupied": 0.03,
+          "unoccupied_dirty": 0.03,
+          "uncertain": 0.02
+        },
+        "dirty_items": [],
+        "table_state": "unoccupied-clean"
+      }
+    },
+    "zone_restricted": {
+      "name": "Staff Only",
+      "type": "restricted",
+      "state": "OCCUPIED",
+      "count": 0,
+      "occupancy_duration_s": 0.0,
+      "details": {}
+    },
+    "zone_parking": {
+      "name": "Loading Bay",
+      "type": "parking",
+      "state": "AVAILABLE",
+      "count": 0,
+      "occupancy_duration_s": 0.0,
+      "details": {
+        "parking_state": "AVAILABLE"
+      }
+    }
+  },
+  "alerts": [
+    {
+      "severity": "CRITICAL",
+      "type": "ZONE_INTRUSION",
+      "message": "INTRUSION DETECTED in restricted zone 'Staff Only'! (Security Vault)",
+      "zone_id": "zone_restricted"
+    }
+  ]
+}
