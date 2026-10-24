@@ -1,0 +1,80 @@
+graph TB
+    %% Monochrome Technical Styling
+    classDef clientLayer fill:#ffffff,stroke:#212529,stroke-width:1.5px,color:#111111;
+    classDef apiLayer fill:#f8f9fa,stroke:#495057,stroke-width:1.5px,color:#111111;
+    classDef aiLayer fill:#ffffff,stroke:#111111,stroke-width:2px,color:#111111;
+    classDef dataLayer fill:#f8f9fa,stroke:#495057,stroke-width:1.5px,color:#111111;
+    classDef streamLayer fill:#f8f9fa,stroke:#495057,stroke-width:1.5px,color:#111111;
+
+    subgraph CLIENT_TIER["Frontend & Operator Tier [Proposed]"]
+        UI["Lenz Web Dashboard<br/>(React / Vite / Tailwind CSS)"]:::clientLayer
+        MONITOR["Multi-Camera Grid & Live Stream Player"]:::clientLayer
+        ANALYTICS["Operational Analytics View<br/>(Recharts / Charts)"]:::clientLayer
+        ALERT_PANEL["Alert Notification Modal<br/>& Verification Feed"]:::clientLayer
+    end
+
+    subgraph API_TIER["Application & API Gateway Tier [Proposed]"]
+        API["FastAPI Backend Service<br/>(Async REST / OpenAPI)"]:::apiLayer
+        AUTH["Auth & RBAC Service<br/>(JWT / API Key Verification)"]:::apiLayer
+        WS_HUB["WebSocket Event Gateway<br/>(Real-Time Push Distribution)"]:::apiLayer
+        JOB_MGR["Job Management Service<br/>(Async Task Orchestration)"]:::apiLayer
+    end
+
+    subgraph INGESTION_TIER["Video Ingestion & Stream Management [Proposed]"]
+        RTSP_CLIENT["RTSP / ONVIF Client Worker<br/>(OpenCV / FFmpeg Pipeline)"]:::streamLayer
+        DECODER["Hardware-Accelerated Decoder<br/>(NVDEC / CPU Multi-threaded)"]:::streamLayer
+        FRAME_BUFFER["Decoupled Frame Buffer<br/>(Shared Memory / Redis Stream)"]:::streamLayer
+    end
+
+    subgraph AI_TIER["Computer Vision & Inference Engine [Proposed]"]
+        YOLO_SRV["YOLO Detection Engine<br/>(ONNX Runtime / TensorRT)"]:::aiLayer
+        TRACKER["Multi-Object Tracker<br/>(ByteTrack / BoT-SORT)"]:::aiLayer
+        EVENT_ENGINE["Spatial/Temporal Event Engine<br/>(Polygons, Dwell, Queues)"]:::aiLayer
+        DENSITY_ENG["Density & Occupancy Estimator<br/>(Crowd & Parking Spaces)"]:::aiLayer
+    end
+
+    subgraph STORAGE_TIER["Storage & Persistence Tier [Proposed]"]
+        PG[("PostgreSQL Database<br/>Users, Cameras, Zones, Events")]:::dataLayer
+        REDIS[("Redis Cache & Pub/Sub<br/>Active State, Tokens, Buffers")]:::dataLayer
+        S3[("Object Storage / MinIO<br/>Video Clips & Event Snapshots")]:::dataLayer
+    end
+
+    subgraph NOTIFICATION_TIER["External Notification & Integrations [Proposed]"]
+        WEBHOOK["Webhook Gateway<br/>(Enterprise Integrations)"]:::apiLayer
+        NOTIFY["Notification Sender<br/>(Email / Slack / SMS)"]:::apiLayer
+    end
+
+    %% External Camera Feeds
+    CAM1["IP Camera 1 (Restaurant)"] --> RTSP_CLIENT
+    CAM2["IP Camera 2 (Railway Station)"] --> RTSP_CLIENT
+    CAM3["IP Camera 3 (Parking Lot)"] --> RTSP_CLIENT
+    CAMN["IP Camera N (Retail/Office)"] --> RTSP_CLIENT
+
+    %% Internal Data Flows
+    RTSP_CLIENT --> DECODER
+    DECODER --> FRAME_BUFFER
+    FRAME_BUFFER --> YOLO_SRV
+    YOLO_SRV --> TRACKER
+    TRACKER --> EVENT_ENGINE
+    TRACKER --> DENSITY_ENG
+    
+    EVENT_ENGINE --> PG
+    EVENT_ENGINE --> S3
+    EVENT_ENGINE --> REDIS
+    DENSITY_ENG --> REDIS
+
+    REDIS --> WS_HUB
+    REDIS --> API
+    PG --> API
+    S3 --> API
+
+    API --> AUTH
+    API --> JOB_MGR
+    
+    WS_HUB --> ALERT_PANEL
+    WS_HUB --> MONITOR
+    API --> UI
+    API --> ANALYTICS
+
+    EVENT_ENGINE --> WEBHOOK
+    EVENT_ENGINE --> NOTIFY

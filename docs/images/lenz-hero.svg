@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="440" viewBox="0 0 1200 440">
+  <!-- Background & Outer Border -->
+  <rect width="1200" height="440" fill="#ffffff"/>
+  <rect x="1" y="1" width="1198" height="438" fill="none" stroke="#ced4da" stroke-width="1"/>
+
+  <!-- Top System Header Bar -->
+  <rect x="30" y="25" width="1140" height="30" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>
+  <text x="45" y="45" fill="#495057" font-family="system-ui, sans-serif" font-size="11" font-weight="bold" letter-spacing="1">
+    LENZ PLATFORM SPECIFICATION • REPOSITORY IMPLEMENTATION STATUS: ARCHITECTURAL BLUEPRINT [PROPOSED]
+  </text>
+  <text x="1155" y="45" text-anchor="end" fill="#6c757d" font-family="monospace" font-size="11">REF: IEEE/ISO-CV-ARCH</text>
+
+  <!-- Title & Tagline -->
+  <text x="600" y="115" text-anchor="middle" fill="#111111" font-family="system-ui, sans-serif" font-size="38" font-weight="900" letter-spacing="3">LENZ</text>
+  <text x="600" y="145" text-anchor="middle" fill="#333333" font-family="system-ui, sans-serif" font-size="16" font-weight="600">AI-Powered Video Intelligence Platform</text>
+  <text x="600" y="168" text-anchor="middle" fill="#666666" font-family="system-ui, sans-serif" font-size="13">"Every Camera. Smarter Insights. Safer Spaces."</text>
+
+  <!-- High-Level Pipeline Schematic -->
+  <g transform="translate(60, 205)" font-family="system-ui, sans-serif" font-size="11">
+    <!-- Box 1: Sources -->
+    <rect width="190" height="90" fill="#f8f9fa" stroke="#343a40" stroke-width="1.5"/>
+    <rect width="190" height="24" fill="#343a40"/>
+    <text x="95" y="16" text-anchor="middle" fill="#ffffff" font-weight="bold">1. VIDEO INPUT [PROPOSED]</text>
+    <text x="95" y="45" text-anchor="middle" fill="#212529">RTSP / ONVIF IP Streams</text>
+    <text x="95" y="65" text-anchor="middle" fill="#495057">MP4 / AVI File Uploads</text>
+    <text x="95" y="80" text-anchor="middle" fill="#6c757d">5 - 15 FPS Decimation</text>
+
+    <!-- Arrow 1 to 2 -->
+    <path d="M 190 45 L 230 45" stroke="#212529" stroke-width="1.5" fill="none"/>
+    <polygon points="230,45 224,41 224,49" fill="#212529"/>
+
+    <!-- Box 2: Ingestion & Buffer -->
+    <rect x="235" width="190" height="90" fill="#f8f9fa" stroke="#343a40" stroke-width="1.5"/>
+    <rect x="235" width="190" height="24" fill="#343a40"/>
+    <text x="330" y="16" text-anchor="middle" fill="#ffffff" font-weight="bold">2. INGESTION [PROPOSED]</text>
+    <text x="330" y="45" text-anchor="middle" fill="#212529">OpenCV / FFmpeg Pipeline</text>
+    <text x="330" y="65" text-anchor="middle" fill="#495057">Shared Ring Buffers</text>
+    <text x="330" y="80" text-anchor="middle" fill="#6c757d">Automatic Reconnect</text>
+
+    <!-- Arrow 2 to 3 -->
+    <path d="M 425 45 L 465 45" stroke="#212529" stroke-width="1.5" fill="none"/>
+    <polygon points="465,45 459,41 459,49" fill="#212529"/>
+
+    <!-- Box 3: AI Inference & Tracking -->
+    <rect x="470" width="200" height="90" fill="#ffffff" stroke="#111111" stroke-width="2"/>
+    <rect x="470" width="200" height="24" fill="#111111"/>
+    <text x="570" y="16" text-anchor="middle" fill="#ffffff" font-weight="bold">3. CV &amp; TRACKING [PROPOSED]</text>
+    <text x="570" y="45" text-anchor="middle" fill="#111111" font-weight="bold">YOLOv8/v11 (ONNX / TensorRT)</text>
+    <text x="570" y="65" text-anchor="middle" fill="#333333">ByteTrack Trajectory IDs</text>
+    <text x="570" y="80" text-anchor="middle" fill="#6c757d">Person &amp; Vehicle Classes</text>
+
+    <!-- Arrow 3 to 4 -->
+    <path d="M 670 45 L 710 45" stroke="#212529" stroke-width="1.5" fill="none"/>
+    <polygon points="710,45 704,41 704,49" fill="#212529"/>
+
+    <!-- Box 4: Event Engine -->
+    <rect x="715" width="190" height="90" fill="#f8f9fa" stroke="#343a40" stroke-width="1.5"/>
+    <rect x="715" width="190" height="24" fill="#343a40"/>
+    <text x="810" y="16" text-anchor="middle" fill="#ffffff" font-weight="bold">4. RULE ENGINE [PROPOSED]</text>
+    <text x="810" y="45" text-anchor="middle" fill="#212529">Polygon ROI Ray-Casting</text>
+    <text x="810" y="65" text-anchor="middle" fill="#495057">Temporal Dwell Counters</text>
+    <text x="810" y="80" text-anchor="middle" fill="#6c757d">Debounce &amp; Deduplication</text>
+
+    <!-- Arrow 4 to 5 -->
+    <path d="M 905 45 L 945 45" stroke="#212529" stroke-width="1.5" fill="none"/>
+    <polygon points="945,45 939,41 939,49" fill="#212529"/>
+
+    <!-- Box 5: Dispatch & UI -->
+    <rect x="950" width="185" height="90" fill="#f8f9fa" stroke="#343a40" stroke-width="1.5"/>
+    <rect x="950" width="185" height="24" fill="#343a40"/>
+    <text x="1042" y="16" text-anchor="middle" fill="#ffffff" font-weight="bold">5. DISPATCH [PROPOSED]</text>
+    <text x="1042" y="45" text-anchor="middle" fill="#212529">PostgreSQL &amp; S3 Evidence</text>
+    <text x="1042" y="65" text-anchor="middle" fill="#495057">WebSocket Push Gateway</text>
+    <text x="1042" y="80" text-anchor="middle" fill="#6c757d">Human-in-the-Loop Review</text>
+  </g>
+
+  <!-- Target Environment Capabilities Row -->
+  <g transform="translate(60, 335)" font-family="system-ui, sans-serif" font-size="11">
+    <rect width="1075" height="65" fill="#ffffff" stroke="#ced4da" stroke-width="1"/>
+    <text x="20" y="24" fill="#212529" font-weight="bold">EVALUATED TARGET DOMAINS &amp; PLANNED CAPABILITIES:</text>
+    <text x="20" y="46" fill="#495057">
+      • Transit Hubs (Crowd Surge)  |  • Restaurants &amp; Cafes (Queue &amp; Table Turn)  |  • Parking Lots (Bay Occupancy)  |  • Healthcare &amp; Retail (Waiting Areas)  |  • Perimeters (Intrusion)
+    </text>
+  </g>
+
+  <!-- Footer Disclaimer -->
+  <text x="600" y="425" text-anchor="middle" fill="#868e96" font-family="system-ui, sans-serif" font-size="10">
+    Technical Architecture Blueprint • Source code repository initialized under MIT License • Real-time processing specifications are proposed designs
+  </text>
+</svg>

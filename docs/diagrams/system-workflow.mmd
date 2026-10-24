@@ -1,0 +1,76 @@
+flowchart TD
+    %% Monochrome Technical Styling
+    classDef sourceClass fill:#ffffff,stroke:#212529,stroke-width:1.5px,color:#111111;
+    classDef ingestClass fill:#f8f9fa,stroke:#495057,stroke-width:1.5px,color:#111111;
+    classDef aiClass fill:#ffffff,stroke:#111111,stroke-width:2px,color:#111111;
+    classDef ruleClass fill:#f8f9fa,stroke:#495057,stroke-width:1.5px,color:#111111;
+    classDef storageClass fill:#f8f9fa,stroke:#495057,stroke-width:1.5px,color:#111111;
+    classDef uiClass fill:#ffffff,stroke:#212529,stroke-width:1.5px,color:#111111;
+    classDef errorClass fill:#f1f3f5,stroke:#868e96,stroke-width:1px,stroke-dasharray:4 3,color:#495057;
+
+    subgraph INGESTION["1. Video Ingestion & Decoding [Proposed]"]
+        CAM["Live Camera Feed<br/>(RTSP / ONVIF / HLS)"]:::sourceClass
+        UPL["Uploaded Video File<br/>(MP4 / AVI / MKV)"]:::sourceClass
+        
+        VAL_INPUT{"Validate Source<br/>& Format"}:::ingestClass
+        INGEST["Stream Ingestion & Demuxer<br/>(OpenCV / FFmpeg)"]:::ingestClass
+        FRAME_EXT["Frame Extraction & Sampling<br/>(Configurable FPS Decimation)"]:::ingestClass
+        
+        ERR_CONN["Log Connection Drop<br/>& Auto-Reconnect"]:::errorClass
+        ERR_CORRUPT["Flag Corrupt File<br/>& Notify User"]:::errorClass
+    end
+
+    subgraph AI_PIPELINE["2. Computer Vision & Inference [Proposed]"]
+        PREPROC["Frame Preprocessing<br/>(Resize, Letterbox, Normalize)"]:::aiClass
+        DET["Object Detection<br/>(YOLO Person, Vehicle, Object)"]:::aiClass
+        TRACK["Multi-Object Tracking<br/>(ByteTrack / Kalman Filter)"]:::aiClass
+        
+        ERR_INF["Inference Fallback / Retry<br/>& Latency Telemetry"]:::errorClass
+    end
+
+    subgraph REASONING["3. Event Evaluation & Deduplication [Proposed]"]
+        ZONE_EVAL["Spatial Rule Evaluation<br/>(Polygon ROI, Line Crossing)"]:::ruleClass
+        TEMP_EVAL["Temporal Rule Evaluation<br/>(Dwell Time, Queue, Overcrowding)"]:::ruleClass
+        DEDUP{"Event Validation<br/>& Deduplication Window"}:::ruleClass
+        DROP["Suppress Redundant<br/>Duplicate Alert"]:::ingestClass
+    end
+
+    subgraph STORAGE_NOTIF["4. Persistence & Dispatch [Proposed]"]
+        EVENT_STORE[("PostgreSQL Database<br/>Events, Metadata, Audit")]:::storageClass
+        MEDIA_STORE[("Object Storage / S3<br/>Keyframe Snapshots & Clips")]:::storageClass
+        ALERT_DISP["Alert Dispatcher<br/>(WebSocket / Webhook / Email)"]:::storageClass
+        
+        ERR_DISP["Retry Queue / DLQ<br/>(Fallback Channel)"]:::errorClass
+    end
+
+    subgraph OPERATOR["5. Presentation & Human Review [Proposed]"]
+        DASH["Real-Time Dashboard<br/>(Live Feed Overlay & Metrics)"]:::uiClass
+        HUMAN{"Human Operator Review<br/>& Verification"}:::uiClass
+        ACK["Acknowledge & Escalate<br/>Incident Response"]:::uiClass
+        FALSE_POS["Mark False Positive<br/>(Active Learning Feedback)"]:::uiClass
+    end
+
+    %% Flow Connections
+    CAM --> VAL_INPUT
+    UPL --> VAL_INPUT
+    VAL_INPUT -- "Stream Down / Unreachable" --> ERR_CONN
+    VAL_INPUT -- "Invalid / Corrupt Media" --> ERR_CORRUPT
+    VAL_INPUT -- "Stream Valid" --> INGEST
+    INGEST --> FRAME_EXT
+    FRAME_EXT --> PREPROC
+    PREPROC --> DET
+    DET -- "GPU / CUDA Timeout" --> ERR_INF
+    DET --> TRACK
+    TRACK --> ZONE_EVAL
+    ZONE_EVAL --> TEMP_EVAL
+    TEMP_EVAL --> DEDUP
+    DEDUP -- "Duplicate (Within Window)" --> DROP
+    DEDUP -- "Novel Valid Event" --> EVENT_STORE
+    DEDUP -- "Novel Valid Event" --> MEDIA_STORE
+    DEDUP -- "High Severity Alert" --> ALERT_DISP
+    ALERT_DISP -- "Dispatch Failure" --> ERR_DISP
+    ALERT_DISP --> DASH
+    EVENT_STORE -.-> DASH
+    DASH --> HUMAN
+    HUMAN -- "Verified Incident" --> ACK
+    HUMAN -- "Spurious Detection" --> FALSE_POS

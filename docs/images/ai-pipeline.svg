@@ -1,0 +1,163 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560" viewBox="0 0 1200 560">
+  <rect width="1200" height="560" fill="#ffffff"/>
+  <rect x="1" y="1" width="1198" height="558" fill="none" stroke="#ced4da" stroke-width="1"/>
+
+  <text x="600" y="40" text-anchor="middle" fill="#111111" font-family="system-ui, sans-serif" font-size="20" font-weight="bold">
+    AI Computer Vision &amp; Tracking Pipeline [Proposed Architecture]
+  </text>
+  <text x="600" y="62" text-anchor="middle" fill="#6c757d" font-family="system-ui, sans-serif" font-size="12">
+    Stage-by-stage transformation of raw video frames into validated, actionable incident events
+  </text>
+
+  <!-- 6 Stages -->
+  <g transform="translate(30, 95)" font-family="system-ui, sans-serif" font-size="11">
+    <!-- Stage 1 -->
+    <rect width="175" height="380" fill="#f8f9fa" stroke="#495057" stroke-width="1.5"/>
+    <rect width="175" height="28" fill="#495057"/>
+    <text x="87" y="18" text-anchor="middle" fill="#ffffff" font-weight="bold">1. INGESTION [PROP]</text>
+    <g transform="translate(12, 45)" fill="#212529">
+      <text x="0" y="15" font-weight="bold">• Frame Demuxing</text>
+      <text x="0" y="32" fill="#495057">OpenCV VideoCapture /</text>
+      <text x="0" y="48" fill="#495057">FFmpeg RTSP client</text>
+
+      <text x="0" y="80" font-weight="bold">• FPS Decimation</text>
+      <text x="0" y="96" fill="#495057">Downsample 30 FPS</text>
+      <text x="0" y="112" fill="#495057">to 5 - 10 FPS target</text>
+
+      <text x="0" y="144" font-weight="bold">• Shared Ring Buffer</text>
+      <text x="0" y="160" fill="#495057">Decoupled queue to</text>
+      <text x="0" y="176" fill="#495057">prevent stream stalls</text>
+
+      <text x="0" y="208" font-weight="bold">• Stream Health</text>
+      <text x="0" y="224" fill="#495057">Heartbeat telemetry</text>
+    </g>
+
+    <!-- Stage 2 -->
+    <g transform="translate(195, 0)">
+      <rect width="175" height="380" fill="#f8f9fa" stroke="#495057" stroke-width="1.5"/>
+      <rect width="175" height="28" fill="#495057"/>
+      <text x="87" y="18" text-anchor="middle" fill="#ffffff" font-weight="bold">2. PREPROCESS [PROP]</text>
+      <g transform="translate(12, 45)" fill="#212529">
+        <text x="0" y="15" font-weight="bold">• Color Conversion</text>
+        <text x="0" y="32" fill="#495057">BGR to RGB color</text>
+        <text x="0" y="48" fill="#495057">space transformation</text>
+
+        <text x="0" y="80" font-weight="bold">• Letterbox Padding</text>
+        <text x="0" y="96" fill="#495057">Aspect-preserving</text>
+        <text x="0" y="112" fill="#495057">resize to 640x640</text>
+
+        <text x="0" y="144" font-weight="bold">• Normalization</text>
+        <text x="0" y="160" fill="#495057">Scale uint8 [0, 255]</text>
+        <text x="0" y="176" fill="#495057">to float32 [0.0, 1.0]</text>
+
+        <text x="0" y="208" font-weight="bold">• Tensor Transfer</text>
+        <text x="0" y="224" fill="#495057">Device buffer load</text>
+      </g>
+    </g>
+
+    <!-- Stage 3 -->
+    <g transform="translate(390, 0)">
+      <rect width="175" height="380" fill="#ffffff" stroke="#111111" stroke-width="2"/>
+      <rect width="175" height="28" fill="#111111"/>
+      <text x="87" y="18" text-anchor="middle" fill="#ffffff" font-weight="bold">3. DETECTION [PROP]</text>
+      <g transform="translate(12, 45)" fill="#212529">
+        <text x="0" y="15" font-weight="bold">• YOLO Inference</text>
+        <text x="0" y="32" fill="#495057">ONNX / TensorRT</text>
+        <text x="0" y="48" fill="#495057">lightweight backbone</text>
+
+        <text x="0" y="80" font-weight="bold">• Target Classes</text>
+        <text x="0" y="96" fill="#495057">Person, Car, Truck,</text>
+        <text x="0" y="112" fill="#495057">Bicycle, Backpack</text>
+
+        <text x="0" y="144" font-weight="bold">• Raw Predictions</text>
+        <text x="0" y="160" fill="#495057">BBoxes (x, y, w, h)</text>
+        <text x="0" y="176" fill="#495057">+ class confidences</text>
+
+        <text x="0" y="208" font-weight="bold">• NMS Filtering</text>
+        <text x="0" y="224" fill="#495057">IoU threshold = 0.45</text>
+      </g>
+    </g>
+
+    <!-- Stage 4 -->
+    <g transform="translate(585, 0)">
+      <rect width="175" height="380" fill="#ffffff" stroke="#111111" stroke-width="2"/>
+      <rect width="175" height="28" fill="#111111"/>
+      <text x="87" y="18" text-anchor="middle" fill="#ffffff" font-weight="bold">4. TRACKING [PROP]</text>
+      <g transform="translate(12, 45)" fill="#212529">
+        <text x="0" y="15" font-weight="bold">• ByteTrack Method</text>
+        <text x="0" y="32" fill="#495057">Associates high &amp; low</text>
+        <text x="0" y="48" fill="#495057">confidence detections</text>
+
+        <text x="0" y="80" font-weight="bold">• Kalman Filtering</text>
+        <text x="0" y="96" fill="#495057">State estimation &amp;</text>
+        <text x="0" y="112" fill="#495057">velocity prediction</text>
+
+        <text x="0" y="144" font-weight="bold">• Persistent Track IDs</text>
+        <text x="0" y="160" fill="#495057">Maintains identities</text>
+        <text x="0" y="176" fill="#495057">through occlusions</text>
+
+        <text x="0" y="208" font-weight="bold">• Trajectory Log</text>
+        <text x="0" y="224" fill="#495057">Centroid history path</text>
+      </g>
+    </g>
+
+    <!-- Stage 5 -->
+    <g transform="translate(780, 0)">
+      <rect width="175" height="380" fill="#f8f9fa" stroke="#495057" stroke-width="1.5"/>
+      <rect width="175" height="28" fill="#495057"/>
+      <text x="87" y="18" text-anchor="middle" fill="#ffffff" font-weight="bold">5. RULE LOGIC [PROP]</text>
+      <g transform="translate(12, 45)" fill="#212529">
+        <text x="0" y="15" font-weight="bold">• Ray-Casting Test</text>
+        <text x="0" y="32" fill="#495057">Point-in-Polygon check</text>
+        <text x="0" y="48" fill="#495057">for restricted boundaries</text>
+
+        <text x="0" y="80" font-weight="bold">• Dwell Duration</text>
+        <text x="0" y="96" fill="#495057">Tracklet time in zone</text>
+        <text x="0" y="112" fill="#495057">&gt; T seconds threshold</text>
+
+        <text x="0" y="144" font-weight="bold">• Density Estimation</text>
+        <text x="0" y="160" fill="#495057">Headcount per polygon</text>
+        <text x="0" y="176" fill="#495057">&gt; safety threshold</text>
+
+        <text x="0" y="208" font-weight="bold">• Parking Slot IoU</text>
+        <text x="0" y="224" fill="#495057">Overlap ratio &gt; 0.35</text>
+      </g>
+    </g>
+
+    <!-- Stage 6 -->
+    <g transform="translate(975, 0)">
+      <rect width="165" height="380" fill="#f8f9fa" stroke="#495057" stroke-width="1.5"/>
+      <rect width="165" height="28" fill="#495057"/>
+      <text x="82" y="18" text-anchor="middle" fill="#ffffff" font-weight="bold">6. DISPATCH [PROP]</text>
+      <g transform="translate(12, 45)" fill="#212529">
+        <text x="0" y="15" font-weight="bold">• Debounce Window</text>
+        <text x="0" y="32" fill="#495057">Suppresses duplicate</text>
+        <text x="0" y="48" fill="#495057">alerts within window</text>
+
+        <text x="0" y="80" font-weight="bold">• Keyframe Capture</text>
+        <text x="0" y="96" fill="#495057">Crops bounding box &amp;</text>
+        <text x="0" y="112" fill="#495057">saves JPEG to S3</text>
+
+        <text x="0" y="144" font-weight="bold">• Structured Log</text>
+        <text x="0" y="160" fill="#495057">Writes JSON event to</text>
+        <text x="0" y="176" fill="#495057">PostgreSQL database</text>
+
+        <text x="0" y="208" font-weight="bold">• WebSocket Push</text>
+        <text x="0" y="224" fill="#495057">Broadcasts to UI</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- Connectors -->
+  <g stroke="#212529" stroke-width="1.5" fill="none">
+    <path d="M 205 285 L 225 285"/>
+    <path d="M 400 285 L 420 285"/>
+    <path d="M 595 285 L 615 285"/>
+    <path d="M 790 285 L 810 285"/>
+    <path d="M 985 285 L 1005 285"/>
+  </g>
+
+  <text x="600" y="525" text-anchor="middle" fill="#868e96" font-family="system-ui, sans-serif" font-size="10">
+    Pipeline status: Proposed architectural design. Performance estimates are derived from official YOLOv8 and ByteTrack documentation.
+  </text>
+</svg>

@@ -1,0 +1,139 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760">
+  <rect width="1200" height="760" fill="#ffffff"/>
+  <rect x="1" y="1" width="1198" height="758" fill="none" stroke="#ced4da" stroke-width="1"/>
+
+  <text x="600" y="40" text-anchor="middle" fill="#111111" font-family="system-ui, sans-serif" font-size="20" font-weight="bold">
+    Lenz Layered System Architecture [Proposed Architecture]
+  </text>
+  <text x="600" y="62" text-anchor="middle" fill="#6c757d" font-family="system-ui, sans-serif" font-size="12">
+    Decoupled service tiers for multi-stream ingestion, deep learning inference, event routing, and persistence
+  </text>
+
+  <!-- Tier 1: Client -->
+  <g transform="translate(60, 90)" font-family="system-ui, sans-serif" font-size="11">
+    <rect width="1080" height="95" fill="#f8f9fa" stroke="#343a40" stroke-width="1.5"/>
+    <rect width="1080" height="24" fill="#343a40"/>
+    <text x="20" y="16" fill="#ffffff" font-weight="bold">PRESENTATION &amp; OPERATOR TIER (REACT / VITE / TAILWIND CSS) [PROPOSED]</text>
+    
+    <g transform="translate(20, 38)">
+      <rect width="245" height="42" fill="#ffffff" stroke="#ced4da" stroke-width="1"/>
+      <text x="122" y="25" text-anchor="middle" fill="#111111" font-weight="bold">Multi-Stream Video Grid</text>
+
+      <rect x="265" width="245" height="42" fill="#ffffff" stroke="#ced4da" stroke-width="1"/>
+      <text x="387" y="25" text-anchor="middle" fill="#111111" font-weight="bold">Interactive Zone Drawing Tool</text>
+
+      <rect x="530" width="245" height="42" fill="#ffffff" stroke="#ced4da" stroke-width="1"/>
+      <text x="652" y="25" text-anchor="middle" fill="#111111" font-weight="bold">Real-Time Incident Triage Feed</text>
+
+      <rect x="795" width="265" height="42" fill="#ffffff" stroke="#ced4da" stroke-width="1"/>
+      <text x="927" y="25" text-anchor="middle" fill="#111111" font-weight="bold">Operational Analytics &amp; Reports</text>
+    </g>
+  </g>
+
+  <!-- Connectors 1 to 2 -->
+  <g stroke="#212529" stroke-width="1.5" stroke-dasharray="4,4">
+    <line x1="300" y1="185" x2="300" y2="220"/>
+    <line x1="880" y1="185" x2="880" y2="220"/>
+  </g>
+
+  <!-- Tier 2: Application / Gateway -->
+  <g transform="translate(60, 220)" font-family="system-ui, sans-serif" font-size="11">
+    <rect width="1080" height="95" fill="#f8f9fa" stroke="#343a40" stroke-width="1.5"/>
+    <rect width="1080" height="24" fill="#343a40"/>
+    <text x="20" y="16" fill="#ffffff" font-weight="bold">APPLICATION &amp; GATEWAY TIER (FASTAPI / ASYNC PYTHON) [PROPOSED]</text>
+    
+    <g transform="translate(20, 38)">
+      <rect width="245" height="42" fill="#ffffff" stroke="#ced4da" stroke-width="1"/>
+      <text x="122" y="25" text-anchor="middle" fill="#111111" font-weight="bold">REST API &amp; OpenAPI Engine</text>
+
+      <rect x="265" width="245" height="42" fill="#ffffff" stroke="#ced4da" stroke-width="1"/>
+      <text x="387" y="25" text-anchor="middle" fill="#111111" font-weight="bold">Auth, RBAC &amp; API Security</text>
+
+      <rect x="530" width="245" height="42" fill="#ffffff" stroke="#ced4da" stroke-width="1"/>
+      <text x="652" y="25" text-anchor="middle" fill="#111111" font-weight="bold">WebSocket Push Gateway</text>
+
+      <rect x="795" width="265" height="42" fill="#ffffff" stroke="#ced4da" stroke-width="1"/>
+      <text x="927" y="25" text-anchor="middle" fill="#111111" font-weight="bold">Job Orchestrator &amp; Upload Handler</text>
+    </g>
+  </g>
+
+  <!-- Connectors 2 to 3 -->
+  <g stroke="#212529" stroke-width="1.5" stroke-dasharray="4,4">
+    <line x1="400" y1="315" x2="400" y2="350"/>
+    <line x1="750" y1="315" x2="750" y2="350"/>
+  </g>
+
+  <!-- Tier 3: AI Inference -->
+  <g transform="translate(60, 350)" font-family="system-ui, sans-serif" font-size="11">
+    <rect width="1080" height="105" fill="#ffffff" stroke="#111111" stroke-width="2"/>
+    <rect width="1080" height="24" fill="#111111"/>
+    <text x="20" y="16" fill="#ffffff" font-weight="bold">AI INFERENCE &amp; REASONING TIER (ONNX RUNTIME / TENSORRT) [PROPOSED]</text>
+    
+    <g transform="translate(20, 36)">
+      <rect width="245" height="55" fill="#f8f9fa" stroke="#ced4da" stroke-width="1"/>
+      <text x="122" y="24" text-anchor="middle" fill="#111111" font-weight="bold">Frame Decimation &amp; Buffer</text>
+      <text x="122" y="42" text-anchor="middle" fill="#6c757d">5 - 15 FPS Ingestion Pool</text>
+
+      <rect x="265" width="245" height="55" fill="#f8f9fa" stroke="#ced4da" stroke-width="1"/>
+      <text x="387" y="24" text-anchor="middle" fill="#111111" font-weight="bold">Object Detection (YOLO)</text>
+      <text x="387" y="42" text-anchor="middle" fill="#6c757d">Person, Vehicle, Bag Classes</text>
+
+      <rect x="530" width="245" height="55" fill="#f8f9fa" stroke="#ced4da" stroke-width="1"/>
+      <text x="652" y="24" text-anchor="middle" fill="#111111" font-weight="bold">ByteTrack Multi-Object Tracker</text>
+      <text x="652" y="42" text-anchor="middle" fill="#6c757d">Kalman Filter &amp; ID Persistence</text>
+
+      <rect x="795" width="265" height="55" fill="#f8f9fa" stroke="#ced4da" stroke-width="1"/>
+      <text x="927" y="24" text-anchor="middle" fill="#111111" font-weight="bold">Spatial-Temporal Event Engine</text>
+      <text x="927" y="42" text-anchor="middle" fill="#6c757d">Ray-Casting, Dwell &amp; Deduplication</text>
+    </g>
+  </g>
+
+  <!-- Connectors 3 to 4 -->
+  <g stroke="#212529" stroke-width="1.5" stroke-dasharray="4,4">
+    <line x1="450" y1="455" x2="450" y2="490"/>
+    <line x1="720" y1="455" x2="720" y2="490"/>
+  </g>
+
+  <!-- Tier 4: Storage & Messaging -->
+  <g transform="translate(60, 490)" font-family="system-ui, sans-serif" font-size="11">
+    <rect width="1080" height="95" fill="#f8f9fa" stroke="#343a40" stroke-width="1.5"/>
+    <rect width="1080" height="24" fill="#343a40"/>
+    <text x="20" y="16" fill="#ffffff" font-weight="bold">PERSISTENCE, MESSAGE BROKER &amp; EVIDENCE TIER [PROPOSED]</text>
+    
+    <g transform="translate(20, 38)">
+      <rect width="330" height="42" fill="#ffffff" stroke="#ced4da" stroke-width="1"/>
+      <text x="165" y="25" text-anchor="middle" fill="#111111" font-weight="bold">PostgreSQL 16 (Metadata, Events, Zones, Users)</text>
+
+      <rect x="360" width="330" height="42" fill="#ffffff" stroke="#ced4da" stroke-width="1"/>
+      <text x="525" y="25" text-anchor="middle" fill="#111111" font-weight="bold">Redis 7 (State Cache, Frame Queues, Pub/Sub)</text>
+
+      <rect x="720" width="340" height="42" fill="#ffffff" stroke="#ced4da" stroke-width="1"/>
+      <text x="890" y="25" text-anchor="middle" fill="#111111" font-weight="bold">S3 / MinIO (Keyframe Snapshots &amp; Clips)</text>
+    </g>
+  </g>
+
+  <!-- Tier 5: External Feeds & Integrations -->
+  <g transform="translate(60, 620)" font-family="system-ui, sans-serif" font-size="11">
+    <!-- Left: Sources -->
+    <rect width="520" height="95" fill="#ffffff" stroke="#495057" stroke-width="1.5"/>
+    <rect width="520" height="22" fill="#495057"/>
+    <text x="15" y="15" fill="#ffffff" font-weight="bold">INPUT SOURCES &amp; PROTOCOLS [PROPOSED]</text>
+    <text x="15" y="45" fill="#212529">• IP Surveillance Cameras (RTSP / ONVIF H.264 &amp; H.265 Streams)</text>
+    <text x="15" y="65" fill="#212529">• Pre-recorded Video Footage Uploads (MP4, MKV, AVI)</text>
+    <text x="15" y="85" fill="#6c757d">In-memory ring buffer with packet loss recovery</text>
+
+    <!-- Right: Integrations -->
+    <g transform="translate(560, 0)">
+      <rect width="520" height="95" fill="#ffffff" stroke="#495057" stroke-width="1.5"/>
+      <rect width="520" height="22" fill="#495057"/>
+      <text x="15" y="15" fill="#ffffff" font-weight="bold">ALERT INTEGRATIONS &amp; DISPATCH [PROPOSED]</text>
+      <text x="15" y="45" fill="#212529">• Real-Time WebSockets to Operator Workstations (&lt;2s latency)</text>
+      <text x="15" y="65" fill="#212529">• Automated Webhook Payloads to Enterprise Incident Systems</text>
+      <text x="15" y="85" fill="#6c757d">Dead-letter queue with exponential retry on delivery failure</text>
+    </g>
+  </g>
+
+  <text x="600" y="745" text-anchor="middle" fill="#868e96" font-family="system-ui, sans-serif" font-size="10">
+    All architecture components are proposed specifications for the Lenz platform. Repository is currently at initial setup stage.
+  </text>
+</svg>

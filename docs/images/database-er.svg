@@ -1,0 +1,175 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1300" height="850" viewBox="0 0 1300 850">
+  <rect width="1300" height="850" fill="#ffffff"/>
+  <rect x="1" y="1" width="1298" height="848" fill="none" stroke="#ced4da" stroke-width="1"/>
+
+  <!-- Prominent Title -->
+  <text x="650" y="38" text-anchor="middle" fill="#111111" font-family="system-ui, sans-serif" font-size="20" font-weight="bold">
+    Proposed Database Design — Not Yet Implemented
+  </text>
+  <text x="650" y="60" text-anchor="middle" fill="#6c757d" font-family="system-ui, sans-serif" font-size="12">
+    Relational Entity-Relationship Specification for PostgreSQL Event Store and Camera Fleet Registry
+  </text>
+
+  <!-- Table 1: USERS -->
+  <g transform="translate(50, 90)" font-family="monospace" font-size="11">
+    <rect width="250" height="180" fill="#ffffff" stroke="#343a40" stroke-width="1.5"/>
+    <rect width="250" height="26" fill="#f1f3f5" stroke="#343a40" stroke-width="1"/>
+    <text x="125" y="17" text-anchor="middle" fill="#111111" font-family="system-ui, sans-serif" font-size="12" font-weight="bold">USERS</text>
+    <g transform="translate(12, 45)" fill="#212529">
+      <text x="0" y="0"><tspan font-weight="bold">PK</tspan> id: uuid</text>
+      <text x="0" y="18">   name: varchar(100)</text>
+      <text x="0" y="36"><tspan font-weight="bold">UK</tspan> email: varchar(255)</text>
+      <text x="0" y="54">   password_hash: varchar</text>
+      <text x="0" y="72">   role: enum(admin, op)</text>
+      <text x="0" y="90">   created_at: timestamp</text>
+    </g>
+  </g>
+
+  <!-- Table 2: AUDIT_LOGS -->
+  <g transform="translate(50, 310)" font-family="monospace" font-size="11">
+    <rect width="250" height="200" fill="#ffffff" stroke="#343a40" stroke-width="1.5"/>
+    <rect width="250" height="26" fill="#f1f3f5" stroke="#343a40" stroke-width="1"/>
+    <text x="125" y="17" text-anchor="middle" fill="#111111" font-family="system-ui, sans-serif" font-size="12" font-weight="bold">AUDIT_LOGS</text>
+    <g transform="translate(12, 45)" fill="#212529">
+      <text x="0" y="0"><tspan font-weight="bold">PK</tspan> id: uuid</text>
+      <text x="0" y="18"><tspan font-weight="bold">FK</tspan> user_id: uuid</text>
+      <text x="0" y="36">   action: varchar(100)</text>
+      <text x="0" y="54">   resource_type: varchar</text>
+      <text x="0" y="72">   resource_id: varchar</text>
+      <text x="0" y="90">   ip_address: varchar(45)</text>
+      <text x="0" y="108">   timestamp: timestamp</text>
+    </g>
+  </g>
+
+  <!-- Table 3: LOCATIONS -->
+  <g transform="translate(360, 90)" font-family="monospace" font-size="11">
+    <rect width="260" height="170" fill="#ffffff" stroke="#343a40" stroke-width="1.5"/>
+    <rect width="260" height="26" fill="#f1f3f5" stroke="#343a40" stroke-width="1"/>
+    <text x="130" y="17" text-anchor="middle" fill="#111111" font-family="system-ui, sans-serif" font-size="12" font-weight="bold">LOCATIONS</text>
+    <g transform="translate(12, 45)" fill="#212529">
+      <text x="0" y="0"><tspan font-weight="bold">PK</tspan> id: uuid</text>
+      <text x="0" y="18">   name: varchar(150)</text>
+      <text x="0" y="36">   address: text</text>
+      <text x="0" y="54">   metadata: jsonb</text>
+      <text x="0" y="72">   created_at: timestamp</text>
+    </g>
+  </g>
+
+  <!-- Table 4: CAMERAS -->
+  <g transform="translate(360, 300)" font-family="monospace" font-size="11">
+    <rect width="260" height="260" fill="#ffffff" stroke="#111111" stroke-width="2"/>
+    <rect width="260" height="26" fill="#111111"/>
+    <text x="130" y="17" text-anchor="middle" fill="#ffffff" font-family="system-ui, sans-serif" font-size="12" font-weight="bold">CAMERAS</text>
+    <g transform="translate(12, 45)" fill="#212529">
+      <text x="0" y="0"><tspan font-weight="bold">PK</tspan> id: uuid</text>
+      <text x="0" y="18"><tspan font-weight="bold">FK</tspan> location_id: uuid</text>
+      <text x="0" y="36">   name: varchar(100)</text>
+      <text x="0" y="54">   stream_url_enc: text</text>
+      <text x="0" y="72">   protocol: varchar(10)</text>
+      <text x="0" y="90">   status: varchar(20)</text>
+      <text x="0" y="108">   resolution: varchar(20)</text>
+      <text x="0" y="126">   fps: integer</text>
+      <text x="0" y="144">   last_seen_at: timestamp</text>
+      <text x="0" y="162">   created_at: timestamp</text>
+    </g>
+  </g>
+
+  <!-- Table 5: MONITORING_ZONES -->
+  <g transform="translate(360, 600)" font-family="monospace" font-size="11">
+    <rect width="260" height="210" fill="#ffffff" stroke="#343a40" stroke-width="1.5"/>
+    <rect width="260" height="26" fill="#f1f3f5" stroke="#343a40" stroke-width="1"/>
+    <text x="130" y="17" text-anchor="middle" fill="#111111" font-family="system-ui, sans-serif" font-size="12" font-weight="bold">MONITORING_ZONES</text>
+    <g transform="translate(12, 45)" fill="#212529">
+      <text x="0" y="0"><tspan font-weight="bold">PK</tspan> id: uuid</text>
+      <text x="0" y="18"><tspan font-weight="bold">FK</tspan> camera_id: uuid</text>
+      <text x="0" y="36">   name: varchar(100)</text>
+      <text x="0" y="54">   zone_type: varchar(50)</text>
+      <text x="0" y="72">   polygon_coords: jsonb</text>
+      <text x="0" y="90">   zone_config: jsonb</text>
+      <text x="0" y="108">   created_at: timestamp</text>
+    </g>
+  </g>
+
+  <!-- Table 6: DETECTION_EVENTS -->
+  <g transform="translate(680, 280)" font-family="monospace" font-size="11">
+    <rect width="270" height="290" fill="#ffffff" stroke="#111111" stroke-width="2"/>
+    <rect width="270" height="26" fill="#111111"/>
+    <text x="135" y="17" text-anchor="middle" fill="#ffffff" font-family="system-ui, sans-serif" font-size="12" font-weight="bold">DETECTION_EVENTS</text>
+    <g transform="translate(12, 45)" fill="#212529">
+      <text x="0" y="0"><tspan font-weight="bold">PK</tspan> id: uuid</text>
+      <text x="0" y="18"><tspan font-weight="bold">FK</tspan> camera_id: uuid</text>
+      <text x="0" y="36"><tspan font-weight="bold">FK</tspan> zone_id: uuid</text>
+      <text x="0" y="54">   event_type: varchar(50)</text>
+      <text x="0" y="72">   confidence: float</text>
+      <text x="0" y="90">   severity: varchar(20)</text>
+      <text x="0" y="108">   review_status: varchar</text>
+      <text x="0" y="126">   timestamp: timestamp</text>
+      <text x="0" y="144">   evidence_snapshot: text</text>
+      <text x="0" y="162">   evidence_clip: text</text>
+      <text x="0" y="180">   metadata: jsonb</text>
+    </g>
+  </g>
+
+  <!-- Table 7: ALERTS -->
+  <g transform="translate(1000, 280)" font-family="monospace" font-size="11">
+    <rect width="250" height="250" fill="#ffffff" stroke="#343a40" stroke-width="1.5"/>
+    <rect width="250" height="26" fill="#f1f3f5" stroke="#343a40" stroke-width="1"/>
+    <text x="125" y="17" text-anchor="middle" fill="#111111" font-family="system-ui, sans-serif" font-size="12" font-weight="bold">ALERTS</text>
+    <g transform="translate(12, 45)" fill="#212529">
+      <text x="0" y="0"><tspan font-weight="bold">PK</tspan> id: uuid</text>
+      <text x="0" y="18"><tspan font-weight="bold">FK</tspan> event_id: uuid</text>
+      <text x="0" y="36"><tspan font-weight="bold">FK</tspan> recipient_id: uuid</text>
+      <text x="0" y="54">   channel: varchar(30)</text>
+      <text x="0" y="72">   status: varchar(20)</text>
+      <text x="0" y="90">   created_at: timestamp</text>
+      <text x="0" y="108">   acknowledged_at: timestamp</text>
+      <text x="0" y="126"><tspan font-weight="bold">FK</tspan> acknowledged_by: uuid</text>
+    </g>
+  </g>
+
+  <!-- Table 8: DETECTION_MODELS -->
+  <g transform="translate(680, 90)" font-family="monospace" font-size="11">
+    <rect width="270" height="160" fill="#ffffff" stroke="#343a40" stroke-width="1.5"/>
+    <rect width="270" height="26" fill="#f1f3f5" stroke="#343a40" stroke-width="1"/>
+    <text x="135" y="17" text-anchor="middle" fill="#111111" font-family="system-ui, sans-serif" font-size="12" font-weight="bold">DETECTION_MODELS</text>
+    <g transform="translate(12, 45)" fill="#212529">
+      <text x="0" y="0"><tspan font-weight="bold">PK</tspan> id: uuid</text>
+      <text x="0" y="18">   name: varchar(100)</text>
+      <text x="0" y="36">   version: varchar(50)</text>
+      <text x="0" y="54">   model_type: varchar(50)</text>
+      <text x="0" y="72">   configuration: jsonb</text>
+      <text x="0" y="90">   active_status: boolean</text>
+    </g>
+  </g>
+
+  <!-- Table 9: PROCESSING_JOBS -->
+  <g transform="translate(680, 610)" font-family="monospace" font-size="11">
+    <rect width="270" height="200" fill="#ffffff" stroke="#343a40" stroke-width="1.5"/>
+    <rect width="270" height="26" fill="#f1f3f5" stroke="#343a40" stroke-width="1"/>
+    <text x="135" y="17" text-anchor="middle" fill="#111111" font-family="system-ui, sans-serif" font-size="12" font-weight="bold">PROCESSING_JOBS</text>
+    <g transform="translate(12, 45)" fill="#212529">
+      <text x="0" y="0"><tspan font-weight="bold">PK</tspan> id: uuid</text>
+      <text x="0" y="18"><tspan font-weight="bold">FK</tspan> camera_id: uuid</text>
+      <text x="0" y="36">   video_source: varchar(30)</text>
+      <text x="0" y="54">   status: varchar(20)</text>
+      <text x="0" y="72">   frames_processed: int</text>
+      <text x="0" y="90">   fps_actual: float</text>
+      <text x="0" y="108">   started_at: timestamp</text>
+      <text x="0" y="126">   error_message: text</text>
+    </g>
+  </g>
+
+  <!-- Relationship Lines (Monochrome Solid) -->
+  <g stroke="#343a40" stroke-width="1.5" fill="none">
+    <path d="M 175 270 L 175 310"/>
+    <path d="M 490 260 L 490 300"/>
+    <path d="M 490 560 L 490 600"/>
+    <path d="M 620 425 L 680 425"/>
+    <path d="M 950 425 L 1000 425"/>
+    <path d="M 590 560 L 590 660 L 680 660"/>
+  </g>
+
+  <text x="650" y="835" text-anchor="middle" fill="#868e96" font-family="system-ui, sans-serif" font-size="10">
+    Schema status: Proposed architectural design. All entities, attributes, and relationships are subject to implementation verification.
+  </text>
+</svg>

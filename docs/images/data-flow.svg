@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="640" viewBox="0 0 1200 640">
+  <rect width="1200" height="640" fill="#ffffff"/>
+  <rect x="1" y="1" width="1198" height="638" fill="none" stroke="#ced4da" stroke-width="1"/>
+
+  <text x="600" y="40" text-anchor="middle" fill="#111111" font-family="system-ui, sans-serif" font-size="20" font-weight="bold">
+    Level-1 Data Flow Diagram (DFD) [Proposed Architecture]
+  </text>
+  <text x="600" y="62" text-anchor="middle" fill="#6c757d" font-family="system-ui, sans-serif" font-size="12">
+    Movement of video frames, inference vectors, rule definitions, and incident alerts across system boundaries
+  </text>
+
+  <!-- External Entity: Camera -->
+  <g transform="translate(50, 110)" font-family="system-ui, sans-serif">
+    <rect width="160" height="70" fill="#ffffff" stroke="#111111" stroke-width="2"/>
+    <line x1="12" y1="0" x2="12" y2="70" stroke="#111111" stroke-width="1.5"/>
+    <text x="86" y="32" text-anchor="middle" fill="#111111" font-size="12" font-weight="bold">IP Camera Feed</text>
+    <text x="86" y="50" text-anchor="middle" fill="#6c757d" font-size="11">RTSP Stream Source</text>
+  </g>
+
+  <!-- Process 1.0 -->
+  <g transform="translate(280, 110)" font-family="system-ui, sans-serif">
+    <rect width="120" height="70" rx="10" fill="#f8f9fa" stroke="#343a40" stroke-width="1.5"/>
+    <text x="60" y="30" text-anchor="middle" fill="#111111" font-size="11" font-weight="bold">1.0 Ingest</text>
+    <text x="60" y="48" text-anchor="middle" fill="#495057" font-size="11">&amp; Decimate</text>
+  </g>
+
+  <!-- Data Store D1 -->
+  <g transform="translate(460, 115)" font-family="monospace" font-size="11">
+    <line x1="0" y1="0" x2="140" y2="0" stroke="#343a40" stroke-width="1.5"/>
+    <line x1="0" y1="55" x2="140" y2="55" stroke="#343a40" stroke-width="1.5"/>
+    <rect width="140" height="55" fill="#f8f9fa"/>
+    <text x="70" y="26" text-anchor="middle" fill="#111111" font-weight="bold">D1: Frame Buffer</text>
+    <text x="70" y="44" text-anchor="middle" fill="#6c757d">Decimated Tensors</text>
+  </g>
+
+  <!-- Process 2.0 -->
+  <g transform="translate(660, 110)" font-family="system-ui, sans-serif">
+    <rect width="120" height="70" rx="10" fill="#ffffff" stroke="#111111" stroke-width="2"/>
+    <text x="60" y="30" text-anchor="middle" fill="#111111" font-size="11" font-weight="bold">2.0 Detect</text>
+    <text x="60" y="48" text-anchor="middle" fill="#495057" font-size="11">&amp; Track (YOLO)</text>
+  </g>
+
+  <!-- Process 3.0 -->
+  <g transform="translate(850, 110)" font-family="system-ui, sans-serif">
+    <rect width="120" height="70" rx="10" fill="#f8f9fa" stroke="#343a40" stroke-width="1.5"/>
+    <text x="60" y="30" text-anchor="middle" fill="#111111" font-size="11" font-weight="bold">3.0 Evaluate</text>
+    <text x="60" y="48" text-anchor="middle" fill="#495057" font-size="11">Zone Rules</text>
+  </g>
+
+  <!-- Data Store D2: Zone Configurations -->
+  <g transform="translate(810, 250)" font-family="monospace" font-size="11">
+    <line x1="0" y1="0" x2="200" y2="0" stroke="#343a40" stroke-width="1.5"/>
+    <line x1="0" y1="55" x2="200" y2="55" stroke="#343a40" stroke-width="1.5"/>
+    <rect width="200" height="55" fill="#f8f9fa"/>
+    <text x="100" y="26" text-anchor="middle" fill="#111111" font-weight="bold">D2: Zone Rules &amp; Polygons</text>
+    <text x="100" y="44" text-anchor="middle" fill="#6c757d">Thresholds, Coordinates</text>
+  </g>
+
+  <!-- Data Store D3: Event Store -->
+  <g transform="translate(810, 370)" font-family="monospace" font-size="11">
+    <line x1="0" y1="0" x2="200" y2="0" stroke="#343a40" stroke-width="1.5"/>
+    <line x1="0" y1="55" x2="200" y2="55" stroke="#343a40" stroke-width="1.5"/>
+    <rect width="200" height="55" fill="#f8f9fa"/>
+    <text x="100" y="26" text-anchor="middle" fill="#111111" font-weight="bold">D3: Event Store (Postgres)</text>
+    <text x="100" y="44" text-anchor="middle" fill="#6c757d">BBoxes, Confidence, Time</text>
+  </g>
+
+  <!-- Data Store D4: Media Store -->
+  <g transform="translate(1030, 370)" font-family="monospace" font-size="11">
+    <line x1="0" y1="0" x2="140" y2="0" stroke="#343a40" stroke-width="1.5"/>
+    <line x1="0" y1="55" x2="140" y2="55" stroke="#343a40" stroke-width="1.5"/>
+    <rect width="140" height="55" fill="#f8f9fa"/>
+    <text x="70" y="26" text-anchor="middle" fill="#111111" font-weight="bold">D4: Media (S3)</text>
+    <text x="70" y="44" text-anchor="middle" fill="#6c757d">Keyframe Snapshots</text>
+  </g>
+
+  <!-- Process 4.0 -->
+  <g transform="translate(480, 410)" font-family="system-ui, sans-serif">
+    <rect width="130" height="70" rx="10" fill="#f8f9fa" stroke="#343a40" stroke-width="1.5"/>
+    <text x="65" y="30" text-anchor="middle" fill="#111111" font-size="11" font-weight="bold">4.0 Dispatch</text>
+    <text x="65" y="48" text-anchor="middle" fill="#495057" font-size="11">&amp; WebSocket Push</text>
+  </g>
+
+  <!-- External Entity: Operator -->
+  <g transform="translate(150, 410)" font-family="system-ui, sans-serif">
+    <rect width="180" height="70" fill="#ffffff" stroke="#111111" stroke-width="2"/>
+    <line x1="12" y1="0" x2="12" y2="70" stroke="#111111" stroke-width="1.5"/>
+    <text x="96" y="32" text-anchor="middle" fill="#111111" font-size="12" font-weight="bold">Operator Dashboard</text>
+    <text x="96" y="50" text-anchor="middle" fill="#6c757d" font-size="11">Review &amp; Acknowledge</text>
+  </g>
+
+  <!-- Process 5.0 -->
+  <g transform="translate(480, 525)" font-family="system-ui, sans-serif">
+    <rect width="130" height="60" rx="10" fill="#f8f9fa" stroke="#343a40" stroke-width="1.5"/>
+    <text x="65" y="27" text-anchor="middle" fill="#111111" font-size="11" font-weight="bold">5.0 Aggregate</text>
+    <text x="65" y="44" text-anchor="middle" fill="#495057" font-size="11">Analytics</text>
+  </g>
+
+  <!-- Flow Arrows (Monochrome Lines with Text) -->
+  <g stroke="#343a40" stroke-width="1.5" fill="none">
+    <path d="M 210 145 L 280 145"/>
+    <path d="M 400 145 L 460 145"/>
+    <path d="M 600 145 L 660 145"/>
+    <path d="M 780 145 L 850 145"/>
+    <path d="M 910 250 L 910 180"/>
+    <path d="M 910 180 L 910 370"/>
+    <path d="M 970 145 L 1100 145 L 1100 370"/>
+    <path d="M 810 400 L 610 440"/>
+    <path d="M 480 445 L 330 445"/>
+    <path d="M 240 410 L 240 275 L 810 275"/>
+    <path d="M 810 415 L 610 550"/>
+    <path d="M 480 555 L 240 555 L 240 480"/>
+  </g>
+
+  <text x="600" y="615" text-anchor="middle" fill="#868e96" font-family="system-ui, sans-serif" font-size="10">
+    DFD Level-1 representation of proposed system. Data stores represent planned persistence layers.
+  </text>
+</svg>

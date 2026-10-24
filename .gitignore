@@ -1,0 +1,78 @@
+# ─── Environment & Secrets ──────────────────────────────────────────────────
+.env
+.env.*
+.env.local
+.env.development
+.env.test
+.env.production
+!.env.example
+
+# ─── Python Virtual Environments ───────────────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# ─── Python Caches & Bytecode ──────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+.coverage
+htmlcov/
+*.cover
+
+# ─── Model Weights & Checkpoints ───────────────────────────────────────────
+*.pt
+*.pth
+*.onnx
+*.engine
+*.bin
+*.weights
+*.safetensors
+*.tflite
+*.mlmodel
+
+# ─── Local Databases & State ───────────────────────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+smartspace.db
+
+# ─── Video & Media Recordings ──────────────────────────────────────────────
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.webm
+*.flv
+
+# ─── Generated Evidence Clips & Outputs ────────────────────────────────────
+smartspace-ml/evidence/*
+!smartspace-ml/evidence/.gitkeep
+
+# ─── Operating System & IDE Files ───────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ─── Logs & Temporary Files ────────────────────────────────────────────────
+*.log
+*.tmp
+*.temp
+/tmp/

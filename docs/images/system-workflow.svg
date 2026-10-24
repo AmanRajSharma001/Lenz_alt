@@ -1,0 +1,188 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="660" viewBox="0 0 1200 660">
+  <rect width="1200" height="660" fill="#ffffff"/>
+  <rect x="1" y="1" width="1198" height="658" fill="none" stroke="#ced4da" stroke-width="1"/>
+
+  <text x="600" y="40" text-anchor="middle" fill="#111111" font-family="system-ui, sans-serif" font-size="20" font-weight="bold">
+    Lenz End-to-End Processing Workflow [Proposed Architecture]
+  </text>
+  <text x="600" y="62" text-anchor="middle" fill="#6c757d" font-family="system-ui, sans-serif" font-size="12">
+    Data flow from camera stream ingestion through deep learning inference, spatial rule evaluation, persistence, and operator review
+  </text>
+
+  <!-- 5 Workflow Columns -->
+  <!-- Col 1: Ingestion -->
+  <g transform="translate(50, 95)" font-family="system-ui, sans-serif" font-size="11">
+    <rect width="190" height="460" fill="#f8f9fa" stroke="#495057" stroke-width="1.5"/>
+    <rect width="190" height="32" fill="#495057"/>
+    <text x="95" y="21" text-anchor="middle" fill="#ffffff" font-weight="bold">1. VIDEO INGESTION [PROPOSED]</text>
+
+    <g transform="translate(15, 50)">
+      <rect width="160" height="50" fill="#ffffff" stroke="#ced4da" stroke-width="1"/>
+      <text x="80" y="22" text-anchor="middle" fill="#111111" font-weight="bold">RTSP / ONVIF Input</text>
+      <text x="80" y="38" text-anchor="middle" fill="#6c757d">IP Camera Feeds</text>
+
+      <rect y="70" width="160" height="50" fill="#ffffff" stroke="#ced4da" stroke-width="1"/>
+      <text x="80" y="92" text-anchor="middle" fill="#111111" font-weight="bold">Video File Upload</text>
+      <text x="80" y="108" text-anchor="middle" fill="#6c757d">MP4, MKV, AVI Files</text>
+
+      <rect y="140" width="160" height="50" fill="#ffffff" stroke="#ced4da" stroke-width="1"/>
+      <text x="80" y="162" text-anchor="middle" fill="#111111" font-weight="bold">Demux &amp; Decode</text>
+      <text x="80" y="178" text-anchor="middle" fill="#6c757d">OpenCV / FFmpeg</text>
+
+      <rect y="210" width="160" height="50" fill="#ffffff" stroke="#ced4da" stroke-width="1"/>
+      <text x="80" y="232" text-anchor="middle" fill="#111111" font-weight="bold">Frame Decimation</text>
+      <text x="80" y="248" text-anchor="middle" fill="#6c757d">Sampling (5 - 15 FPS)</text>
+
+      <!-- Error Branch -->
+      <rect y="280" width="160" height="60" fill="#f1f3f5" stroke="#868e96" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="80" y="302" text-anchor="middle" fill="#212529" font-weight="bold">[Error Path] Stream Drop</text>
+      <text x="80" y="320" text-anchor="middle" fill="#6c757d">Exponential Backoff</text>
+      <text x="80" y="334" text-anchor="middle" fill="#6c757d">Auto-Reconnect Daemon</text>
+    </g>
+  </g>
+
+  <!-- Arrow 1 to 2 -->
+  <path d="M 245 320 L 275 320" stroke="#111111" stroke-width="2" fill="none"/>
+  <polygon points="275,320 269,316 269,324" fill="#111111"/>
+
+  <!-- Col 2: CV Inference -->
+  <g transform="translate(280, 95)" font-family="system-ui, sans-serif" font-size="11">
+    <rect width="190" height="460" fill="#ffffff" stroke="#212529" stroke-width="2"/>
+    <rect width="190" height="32" fill="#212529"/>
+    <text x="95" y="21" text-anchor="middle" fill="#ffffff" font-weight="bold">2. CV &amp; INFERENCE [PROPOSED]</text>
+
+    <g transform="translate(15, 50)">
+      <rect width="160" height="50" fill="#f8f9fa" stroke="#ced4da" stroke-width="1"/>
+      <text x="80" y="22" text-anchor="middle" fill="#111111" font-weight="bold">Preprocessing</text>
+      <text x="80" y="38" text-anchor="middle" fill="#6c757d">Letterbox 640x640, Scale</text>
+
+      <rect y="70" width="160" height="50" fill="#f8f9fa" stroke="#ced4da" stroke-width="1"/>
+      <text x="80" y="92" text-anchor="middle" fill="#111111" font-weight="bold">YOLO Detection</text>
+      <text x="80" y="108" text-anchor="middle" fill="#6c757d">BBoxes + Confidence</text>
+
+      <rect y="140" width="160" height="50" fill="#f8f9fa" stroke="#ced4da" stroke-width="1"/>
+      <text x="80" y="162" text-anchor="middle" fill="#111111" font-weight="bold">ByteTrack Associator</text>
+      <text x="80" y="178" text-anchor="middle" fill="#6c757d">Kalman Filter Tracks</text>
+
+      <rect y="210" width="160" height="50" fill="#f8f9fa" stroke="#ced4da" stroke-width="1"/>
+      <text x="80" y="232" text-anchor="middle" fill="#111111" font-weight="bold">Tracklet Buffer</text>
+      <text x="80" y="248" text-anchor="middle" fill="#6c757d">Motion Trajectories</text>
+
+      <!-- Error Branch -->
+      <rect y="280" width="160" height="60" fill="#f1f3f5" stroke="#868e96" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="80" y="302" text-anchor="middle" fill="#212529" font-weight="bold">[Error Path] GPU Fault</text>
+      <text x="80" y="320" text-anchor="middle" fill="#6c757d">Skip Frame &amp; Telemetry</text>
+      <text x="80" y="334" text-anchor="middle" fill="#6c757d">CPU Fallback if Configured</text>
+    </g>
+  </g>
+
+  <!-- Arrow 2 to 3 -->
+  <path d="M 475 320 L 505 320" stroke="#111111" stroke-width="2" fill="none"/>
+  <polygon points="505,320 499,316 499,324" fill="#111111"/>
+
+  <!-- Col 3: Rule Engine -->
+  <g transform="translate(510, 95)" font-family="system-ui, sans-serif" font-size="11">
+    <rect width="190" height="460" fill="#f8f9fa" stroke="#495057" stroke-width="1.5"/>
+    <rect width="190" height="32" fill="#495057"/>
+    <text x="95" y="21" text-anchor="middle" fill="#ffffff" font-weight="bold">3. RULE ENGINE [PROPOSED]</text>
+
+    <g transform="translate(15, 50)">
+      <rect width="160" height="50" fill="#ffffff" stroke="#ced4da" stroke-width="1"/>
+      <text x="80" y="22" text-anchor="middle" fill="#111111" font-weight="bold">Polygon ROI Test</text>
+      <text x="80" y="38" text-anchor="middle" fill="#6c757d">Ray-Casting Intersect</text>
+
+      <rect y="70" width="160" height="50" fill="#ffffff" stroke="#ced4da" stroke-width="1"/>
+      <text x="80" y="92" text-anchor="middle" fill="#111111" font-weight="bold">Dwell Time Threshold</text>
+      <text x="80" y="108" text-anchor="middle" fill="#6c757d">Tracklet Duration in Zone</text>
+
+      <rect y="140" width="160" height="50" fill="#ffffff" stroke="#ced4da" stroke-width="1"/>
+      <text x="80" y="162" text-anchor="middle" fill="#111111" font-weight="bold">Density &amp; Queue Logic</text>
+      <text x="80" y="178" text-anchor="middle" fill="#6c757d">Headcount per Area</text>
+
+      <rect y="210" width="160" height="50" fill="#ffffff" stroke="#ced4da" stroke-width="1"/>
+      <text x="80" y="232" text-anchor="middle" fill="#111111" font-weight="bold">Deduplication Filter</text>
+      <text x="80" y="248" text-anchor="middle" fill="#6c757d">Debounce Cooldown Window</text>
+
+      <!-- Discard Branch -->
+      <rect y="280" width="160" height="60" fill="#f1f3f5" stroke="#868e96" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="80" y="302" text-anchor="middle" fill="#212529" font-weight="bold">[Filter] Duplicate Event</text>
+      <text x="80" y="320" text-anchor="middle" fill="#6c757d">Increment Active Counter</text>
+      <text x="80" y="334" text-anchor="middle" fill="#6c757d">Suppress Notification</text>
+    </g>
+  </g>
+
+  <!-- Arrow 3 to 4 -->
+  <path d="M 705 320 L 735 320" stroke="#111111" stroke-width="2" fill="none"/>
+  <polygon points="735,320 729,316 729,324" fill="#111111"/>
+
+  <!-- Col 4: Storage & Alerts -->
+  <g transform="translate(740, 95)" font-family="system-ui, sans-serif" font-size="11">
+    <rect width="190" height="460" fill="#f8f9fa" stroke="#495057" stroke-width="1.5"/>
+    <rect width="190" height="32" fill="#495057"/>
+    <text x="95" y="21" text-anchor="middle" fill="#ffffff" font-weight="bold">4. DISPATCH [PROPOSED]</text>
+
+    <g transform="translate(15, 50)">
+      <rect width="160" height="50" fill="#ffffff" stroke="#ced4da" stroke-width="1"/>
+      <text x="80" y="22" text-anchor="middle" fill="#111111" font-weight="bold">PostgreSQL Database</text>
+      <text x="80" y="38" text-anchor="middle" fill="#6c757d">Event &amp; Zone Records</text>
+
+      <rect y="70" width="160" height="50" fill="#ffffff" stroke="#ced4da" stroke-width="1"/>
+      <text x="80" y="92" text-anchor="middle" fill="#111111" font-weight="bold">S3 / MinIO Store</text>
+      <text x="80" y="108" text-anchor="middle" fill="#6c757d">Keyframe Snapshot JPEGs</text>
+
+      <rect y="140" width="160" height="50" fill="#ffffff" stroke="#ced4da" stroke-width="1"/>
+      <text x="80" y="162" text-anchor="middle" fill="#111111" font-weight="bold">WebSocket Hub</text>
+      <text x="80" y="178" text-anchor="middle" fill="#6c757d">Broadcast JSON Payload</text>
+
+      <rect y="210" width="160" height="50" fill="#ffffff" stroke="#ced4da" stroke-width="1"/>
+      <text x="80" y="232" text-anchor="middle" fill="#111111" font-weight="bold">External Webhooks</text>
+      <text x="80" y="248" text-anchor="middle" fill="#6c757d">Slack / Email Dispatch</text>
+
+      <!-- Failure Branch -->
+      <rect y="280" width="160" height="60" fill="#f1f3f5" stroke="#868e96" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="80" y="302" text-anchor="middle" fill="#212529" font-weight="bold">[Error Path] Push Failure</text>
+      <text x="80" y="320" text-anchor="middle" fill="#6c757d">Dead-Letter Queue</text>
+      <text x="80" y="334" text-anchor="middle" fill="#6c757d">Retry with Backoff</text>
+    </g>
+  </g>
+
+  <!-- Arrow 4 to 5 -->
+  <path d="M 935 320 L 965 320" stroke="#111111" stroke-width="2" fill="none"/>
+  <polygon points="965,320 959,316 959,324" fill="#111111"/>
+
+  <!-- Col 5: Operator Review -->
+  <g transform="translate(970, 95)" font-family="system-ui, sans-serif" font-size="11">
+    <rect width="180" height="460" fill="#f8f9fa" stroke="#495057" stroke-width="1.5"/>
+    <rect width="180" height="32" fill="#495057"/>
+    <text x="90" y="21" text-anchor="middle" fill="#ffffff" font-weight="bold">5. HUMAN REVIEW [PROPOSED]</text>
+
+    <g transform="translate(10, 50)">
+      <rect width="160" height="50" fill="#ffffff" stroke="#ced4da" stroke-width="1"/>
+      <text x="80" y="22" text-anchor="middle" fill="#111111" font-weight="bold">Operator UI Grid</text>
+      <text x="80" y="38" text-anchor="middle" fill="#6c757d">Live Feed Overlays</text>
+
+      <rect y="70" width="160" height="50" fill="#ffffff" stroke="#ced4da" stroke-width="1"/>
+      <text x="80" y="92" text-anchor="middle" fill="#111111" font-weight="bold">Evidence Inspection</text>
+      <text x="80" y="108" text-anchor="middle" fill="#6c757d">Review Snapshot Crop</text>
+
+      <rect y="140" width="160" height="50" fill="#ffffff" stroke="#ced4da" stroke-width="1"/>
+      <text x="80" y="162" text-anchor="middle" fill="#111111" font-weight="bold">Incident Action</text>
+      <text x="80" y="178" text-anchor="middle" fill="#6c757d">Acknowledge / Escalate</text>
+
+      <rect y="210" width="160" height="50" fill="#ffffff" stroke="#ced4da" stroke-width="1"/>
+      <text x="80" y="232" text-anchor="middle" fill="#111111" font-weight="bold">Feedback Capture</text>
+      <text x="80" y="248" text-anchor="middle" fill="#6c757d">Flag False Positive</text>
+
+      <rect y="280" width="160" height="60" fill="#ffffff" stroke="#343a40" stroke-width="1"/>
+      <text x="80" y="302" text-anchor="middle" fill="#111111" font-weight="bold">Audit Logging</text>
+      <text x="80" y="320" text-anchor="middle" fill="#6c757d">Timestamp, User ID,</text>
+      <text x="80" y="334" text-anchor="middle" fill="#6c757d">Operator Notes</text>
+    </g>
+  </g>
+
+  <!-- Bottom Principle -->
+  <rect x="50" y="580" width="1100" height="40" fill="#f8f9fa" stroke="#ced4da" stroke-width="1"/>
+  <text x="600" y="605" text-anchor="middle" fill="#333333" font-family="system-ui, sans-serif" font-size="12">
+    Engineering Principle: The automated pipeline directs human operator attention; critical actions require operator review and verification.
+  </text>
+</svg>

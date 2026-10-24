@@ -1,0 +1,65 @@
+flowchart LR
+    %% Monochrome Technical Styling
+    classDef stage fill:#f8f9fa,stroke:#495057,stroke-width:1.5px,color:#111111;
+    classDef model fill:#ffffff,stroke:#111111,stroke-width:2px,color:#111111;
+    classDef rule fill:#f8f9fa,stroke:#495057,stroke-width:1.5px,color:#111111;
+    classDef out fill:#ffffff,stroke:#212529,stroke-width:1.5px,color:#111111;
+
+    subgraph S1["1. Frame Ingestion [Proposed]"]
+        F1["Raw Video Stream / File"]:::stage
+        F2["Frame Sampling & Decoder<br/>(FPS Decimation e.g., 5-15 FPS)"]:::stage
+    end
+
+    subgraph S2["2. Frame Preprocessing [Proposed]"]
+        P1["Color Conversion<br/>(BGR to RGB)"]:::stage
+        P2["Letterbox & Resize<br/>(e.g., 640x640 / 1280x1280)"]:::stage
+        P3["Batch Normalization<br/>(Scale [0, 1] / Tensor Conversion)"]:::stage
+    end
+
+    subgraph S3["3. Deep Learning Inference [Proposed]"]
+        M1["YOLO Detection Model<br/>(TensorRT / ONNX Runtime)"]:::model
+        M2["Raw Bounding Boxes<br/>+ Class Confidences"]:::model
+        M3["Non-Maximum Suppression (NMS)<br/>Filter Low-Confidence Detections"]:::model
+    end
+
+    subgraph S4["4. Temporal Tracking [Proposed]"]
+        T1["ByteTrack Tracker<br/>(Kalman Filter State Prediction)"]:::model
+        T2["IoU & Re-ID Association<br/>Match Detections to Tracklets"]:::model
+        T3["Persistent Object IDs<br/>+ Trajectory Vectors"]:::model
+    end
+
+    subgraph S5["5. Spatial & Temporal Rules [Proposed]"]
+        R1["Point-in-Polygon Test<br/>(Restricted Zone / ROI)"]:::rule
+        R2["Dwell Time Counter<br/>(Track Duration in Zone)"]:::rule
+        R3["Density & Queue Length<br/>(Heads/Persons in Bounding Polygon)"]:::rule
+        R4["Parking Spot Overlap<br/>(Vehicle IoU with Parking Slot)"]:::rule
+    end
+
+    subgraph S6["6. Event & Alert Synthesis [Proposed]"]
+        E1["Event Classification<br/>(e.g., Intrusion, Congestion)"]:::out
+        E2["Debounce & Deduplication<br/>(Window Suppression)"]:::out
+        E3["Evidence Snapshot & Clip<br/>Storage Dispatch"]:::out
+        E4["Real-Time Alert Notification<br/>(WebSocket / Push)"]:::out
+    end
+
+    F1 --> F2
+    F2 --> P1
+    P1 --> P2
+    P2 --> P3
+    P3 --> M1
+    M1 --> M2
+    M2 --> M3
+    M3 --> T1
+    T1 --> T2
+    T2 --> T3
+    T3 --> R1
+    T3 --> R2
+    T3 --> R3
+    T3 --> R4
+    R1 --> E1
+    R2 --> E1
+    R3 --> E1
+    R4 --> E1
+    E1 --> E2
+    E2 --> E3
+    E2 --> E4

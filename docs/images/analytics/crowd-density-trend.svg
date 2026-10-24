@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450">
+  <rect width="800" height="450" fill="#ffffff"/>
+  <rect x="1" y="1" width="798" height="448" fill="none" stroke="#ced4da" stroke-width="1"/>
+
+  <text x="40" y="34" fill="#111111" font-family="system-ui, sans-serif" font-size="15" font-weight="bold">
+    Platform Crowd Density Over 24 Hours [Illustrative Synthetic Data — Not Actual Lenz Results]
+  </text>
+  <text x="40" y="54" fill="#6c757d" font-family="system-ui, sans-serif" font-size="11">
+    Demonstration of threshold evaluation logic; numbers represent simulated scenario testing
+  </text>
+
+  <!-- Axes -->
+  <line x1="60" y1="360" x2="740" y2="360" stroke="#212529" stroke-width="1.5"/>
+  <line x1="60" y1="90" x2="60" y2="360" stroke="#212529" stroke-width="1.5"/>
+
+  <!-- Y axis grid & labels -->
+  <g font-family="system-ui, sans-serif" font-size="11" fill="#495057" text-anchor="end">
+    <text x="50" y="365">0%</text>
+    <line x1="60" y1="360" x2="740" y2="360" stroke="#dee2e6" stroke-width="1"/>
+    <text x="50" y="295">25%</text>
+    <line x1="60" y1="290" x2="740" y2="290" stroke="#dee2e6" stroke-width="1"/>
+    <text x="50" y="225">50%</text>
+    <line x1="60" y1="220" x2="740" y2="220" stroke="#dee2e6" stroke-width="1"/>
+    <text x="50" y="155">75%</text>
+    <line x1="60" y1="150" x2="740" y2="150" stroke="#dee2e6" stroke-width="1"/>
+    <text x="50" y="95">100%</text>
+    <line x1="60" y1="90" x2="740" y2="90" stroke="#dee2e6" stroke-width="1"/>
+  </g>
+
+  <!-- Critical Threshold Line at 80% (Dashed Black Line) -->
+  <line x1="60" y1="136" x2="740" y2="136" stroke="#111111" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <text x="735" y="128" text-anchor="end" fill="#111111" font-family="system-ui, sans-serif" font-size="11" font-weight="bold">
+    Configurable Overcrowding Threshold (80% Capacity)
+  </text>
+
+  <!-- X axis labels (Hours) -->
+  <g font-family="system-ui, sans-serif" font-size="11" fill="#495057" text-anchor="middle">
+    <text x="60" y="380">00:00</text>
+    <text x="145" y="380">04:00</text>
+    <text x="230" y="380">08:00</text>
+    <text x="315" y="380">12:00</text>
+    <text x="400" y="380">16:00</text>
+    <text x="485" y="380">18:00</text>
+    <text x="570" y="380">20:00</text>
+    <text x="655" y="380">22:00</text>
+    <text x="740" y="380">24:00</text>
+  </g>
+
+  <!-- Density Curve (Monochrome Solid Black Line with Light Grey Fill) -->
+  <path d="M 60 345 Q 120 350 180 320 T 240 140 T 320 220 T 420 200 T 500 120 T 600 240 T 740 350 L 740 360 L 60 360 Z" fill="#e9ecef" fill-opacity="0.6"/>
+  <path d="M 60 345 Q 120 350 180 320 T 240 140 T 320 220 T 420 200 T 500 120 T 600 240 T 740 350" fill="none" stroke="#111111" stroke-width="2.5"/>
+
+  <!-- Peak indicators -->
+  <circle cx="240" cy="140" r="4" fill="#111111"/>
+  <text x="240" y="125" text-anchor="middle" fill="#111111" font-family="system-ui, sans-serif" font-size="10" font-weight="bold">Simulated Peak (86%)</text>
+
+  <circle cx="500" cy="120" r="4" fill="#111111"/>
+  <text x="500" y="105" text-anchor="middle" fill="#111111" font-family="system-ui, sans-serif" font-size="10" font-weight="bold">Simulated Rush (92%)</text>
+
+  <text x="400" y="425" text-anchor="middle" fill="#868e96" font-family="system-ui, sans-serif" font-size="10">
+    Synthetic baseline curve demonstrating threshold breach triggering. No real-world telemetry is asserted.
+  </text>
+</svg>

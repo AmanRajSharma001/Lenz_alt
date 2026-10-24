@@ -1,0 +1,49 @@
+flowchart LR
+    %% Monochrome Technical Styling
+    classDef entity fill:#ffffff,stroke:#111111,stroke-width:2px,color:#111111;
+    classDef process fill:#f8f9fa,stroke:#343a40,stroke-width:1.5px,color:#111111;
+    classDef store fill:#f8f9fa,stroke:#495057,stroke-width:1.5px,color:#111111;
+
+    %% External Entities
+    CAM["IP Camera / Video Feed"]:::entity
+    USER["Dashboard Operator / Manager"]:::entity
+    EXT_SYS["External Notification Service<br/>(Slack / Email / Webhook)"]:::entity
+
+    %% Processes [Proposed]
+    P1["1.0 Ingest & Decimate Frames [Proposed]"]:::process
+    P2["2.0 Run Object Detection & Tracking [Proposed]"]:::process
+    P3["3.0 Evaluate Event Rules & Zones [Proposed]"]:::process
+    P4["4.0 Dispatch Alerts & Notifications [Proposed]"]:::process
+    P5["5.0 Aggregate Operational Analytics [Proposed]"]:::process
+    P6["6.0 Serve APIs & WebSocket Stream [Proposed]"]:::process
+
+    %% Data Stores [Proposed]
+    D1[("D1 Frame Buffer Queue")]:::store
+    D2[("D2 Spatial/Temporal Zone Rules")]:::store
+    D3[("D3 Detection & Event Store (PostgreSQL)")]:::store
+    D4[("D4 Evidence Media Store (S3/MinIO)")]:::store
+    D5[("D5 Alert Log & Status Store")]:::store
+
+    %% Data Flows
+    CAM -- "Raw Video Stream (RTSP/HLS)" --> P1
+    P1 -- "Extracted Frame Tensors" --> D1
+    D1 -- "Batch Frames" --> P2
+    P2 -- "Bounding Boxes + Tracklet IDs" --> P3
+    D2 -- "Zone Polygons & Thresholds" --> P3
+    
+    P3 -- "Structured Incident Events" --> D3
+    P3 -- "Keyframe Snapshots & Clips" --> D4
+    P3 -- "Triggered Incident Signals" --> P4
+    
+    P4 -- "Alert Records" --> D5
+    P4 -- "Instant Notifications" --> EXT_SYS
+    
+    D3 -- "Historical Event Stream" --> P5
+    P5 -- "Aggregated Metrics (Crowd/Queue/Parking)" --> P6
+    D3 -- "Event Metadata" --> P6
+    D4 -- "Snapshot URLs" --> P6
+    D5 -- "Alert Queue" --> P6
+
+    P6 -- "Live Overlays, Alerts & Charts" --> USER
+    USER -- "Zone Configurations & Thresholds" --> D2
+    USER -- "Incident Acknowledgment & Feedback" --> D5

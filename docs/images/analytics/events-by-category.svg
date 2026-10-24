@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450">
+  <rect width="800" height="450" fill="#ffffff"/>
+  <rect x="1" y="1" width="798" height="448" fill="none" stroke="#ced4da" stroke-width="1"/>
+
+  <text x="40" y="34" fill="#111111" font-family="system-ui, sans-serif" font-size="15" font-weight="bold">
+    Detections by Operational Category [Illustrative Synthetic Data — Not Actual Lenz Results]
+  </text>
+  <text x="40" y="54" fill="#6c757d" font-family="system-ui, sans-serif" font-size="11">
+    Conceptual category distribution schema for event query aggregation
+  </text>
+
+  <!-- Horizontal Bars (Monochrome Shading) -->
+  <g transform="translate(60, 95)" font-family="system-ui, sans-serif">
+    <text x="0" y="24" fill="#111111" font-size="12" font-weight="bold">Crowd Overcrowding Surge</text>
+    <rect x="230" y="8" width="340" height="24" fill="#212529"/>
+    <text x="585" y="25" fill="#111111" font-size="11">34% (Simulated Test Set)</text>
+
+    <text x="0" y="74" fill="#111111" font-size="12" font-weight="bold">Queue Congestion Delay</text>
+    <rect x="230" y="58" width="280" height="24" fill="#495057"/>
+    <text x="525" y="75" fill="#111111" font-size="11">28% (Simulated Test Set)</text>
+
+    <text x="0" y="124" fill="#111111" font-size="12" font-weight="bold">Parking Bay Occupancy</text>
+    <rect x="230" y="108" width="180" height="24" fill="#6c757d"/>
+    <text x="425" y="125" fill="#111111" font-size="11">18% (Simulated Test Set)</text>
+
+    <text x="0" y="174" fill="#111111" font-size="12" font-weight="bold">Unattended Area / Table</text>
+    <rect x="230" y="158" width="120" height="24" fill="#adb5bd"/>
+    <text x="365" y="175" fill="#111111" font-size="11">12% (Simulated Test Set)</text>
+
+    <text x="0" y="224" fill="#111111" font-size="12" font-weight="bold">Restricted Zone Intrusion</text>
+    <rect x="230" y="208" width="80" height="24" fill="#ced4da" stroke="#495057" stroke-width="1"/>
+    <text x="325" y="225" fill="#111111" font-size="11">8% (Simulated Test Set)</text>
+  </g>
+
+  <text x="400" y="425" text-anchor="middle" fill="#868e96" font-family="system-ui, sans-serif" font-size="10">
+    Conceptual category breakdown. Ratios demonstrate aggregation API schema, not deployed production counts.
+  </text>
+</svg>

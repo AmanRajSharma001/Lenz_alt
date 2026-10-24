@@ -1,0 +1,107 @@
+erDiagram
+    USERS {
+        uuid id PK
+        string name
+        string email UK
+        string password_hash
+        string role
+        timestamp created_at
+    }
+
+    LOCATIONS {
+        uuid id PK
+        string name
+        string address
+        jsonb metadata
+        timestamp created_at
+    }
+
+    CAMERAS {
+        uuid id PK
+        uuid location_id FK
+        string name
+        string stream_url_encrypted
+        string protocol
+        string status
+        string resolution
+        int fps
+        timestamp last_seen_at
+        timestamp created_at
+    }
+
+    MONITORING_ZONES {
+        uuid id PK
+        uuid camera_id FK
+        string name
+        string zone_type
+        jsonb polygon_coordinates
+        jsonb zone_configuration
+        timestamp created_at
+    }
+
+    DETECTION_MODELS {
+        uuid id PK
+        string name
+        string version
+        string model_type
+        jsonb configuration
+        boolean active_status
+        timestamp created_at
+    }
+
+    DETECTION_EVENTS {
+        uuid id PK
+        uuid camera_id FK
+        uuid zone_id FK
+        string event_type
+        float confidence
+        string severity
+        string review_status
+        timestamp timestamp
+        string evidence_snapshot_url
+        string evidence_clip_url
+        jsonb metadata
+    }
+
+    ALERTS {
+        uuid id PK
+        uuid event_id FK
+        uuid recipient_id FK
+        string channel
+        string status
+        timestamp created_at
+        timestamp acknowledged_at
+        uuid acknowledged_by FK
+    }
+
+    PROCESSING_JOBS {
+        uuid id PK
+        uuid camera_id FK
+        string video_source_type
+        string status
+        int frames_processed
+        float fps_actual
+        timestamp started_at
+        timestamp completed_at
+        string error_message
+    }
+
+    AUDIT_LOGS {
+        uuid id PK
+        uuid user_id FK
+        string action
+        string resource_type
+        string resource_id
+        string ip_address
+        timestamp timestamp
+    }
+
+    USERS ||--o{ AUDIT_LOGS : "performs"
+    USERS ||--o{ ALERTS : "receives"
+    USERS ||--o{ ALERTS : "acknowledges"
+    LOCATIONS ||--o{ CAMERAS : "houses"
+    CAMERAS ||--o{ MONITORING_ZONES : "defines"
+    CAMERAS ||--o{ DETECTION_EVENTS : "captures"
+    CAMERAS ||--o{ PROCESSING_JOBS : "executes"
+    MONITORING_ZONES ||--o{ DETECTION_EVENTS : "scopes"
+    DETECTION_EVENTS ||--o{ ALERTS : "triggers"

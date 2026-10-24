@@ -1,0 +1,256 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="820" viewBox="0 0 1280 820">
+  <!-- Clean White Background & Outline -->
+  <rect width="1280" height="820" fill="#ffffff"/>
+  <rect x="1" y="1" width="1278" height="818" fill="none" stroke="#ced4da" stroke-width="1"/>
+
+  <!-- Top Navigation Wireframe -->
+  <rect width="1280" height="52" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>
+  <text x="25" y="32" fill="#111111" font-family="system-ui, sans-serif" font-size="16" font-weight="900" letter-spacing="1">LENZ</text>
+  <text x="80" y="32" fill="#6c757d" font-family="system-ui, sans-serif" font-size="12">| Operator Monitoring Portal (Conceptual Wireframe Specification)</text>
+
+  <!-- Nav Links -->
+  <g transform="translate(560, 32)" font-family="system-ui, sans-serif" font-size="12" fill="#495057">
+    <text x="0" y="0" font-weight="bold" fill="#111111">[Live Feeds]</text>
+    <text x="90" y="0">Incident Review</text>
+    <text x="200" y="0">Zone Rules</text>
+    <text x="290" y="0">Analytics</text>
+    <text x="370" y="0">Cameras</text>
+  </g>
+
+  <!-- User / Status Box -->
+  <g transform="translate(1080, 14)" font-family="system-ui, sans-serif" font-size="11">
+    <rect width="175" height="26" fill="#ffffff" stroke="#ced4da" stroke-width="1"/>
+    <text x="15" y="17" fill="#212529">Status: Active (12 Feeds)</text>
+  </g>
+
+  <!-- Prominent Watermark / Wireframe Notice -->
+  <rect x="0" y="52" width="1280" height="24" fill="#e9ecef" stroke="#ced4da" stroke-width="0.5"/>
+  <text x="640" y="68" text-anchor="middle" fill="#495057" font-family="system-ui, sans-serif" font-size="11" font-weight="bold" letter-spacing="1">
+    PROPOSED DASHBOARD WIREFRAME SPECIFICATION — NOT AN IMPLEMENTED APPLICATION SCREENSHOT
+  </text>
+
+  <!-- KPI Row -->
+  <g transform="translate(25, 90)" font-family="system-ui, sans-serif">
+    <!-- Card 1 -->
+    <rect width="285" height="75" fill="#f8f9fa" stroke="#ced4da" stroke-width="1"/>
+    <text x="16" y="24" fill="#6c757d" font-size="11" font-weight="bold">ACTIVE CAMERA STREAMS</text>
+    <text x="16" y="54" fill="#111111" font-size="22" font-weight="bold">12 / 12 Feeds</text>
+    <text x="175" y="52" fill="#495057" font-size="11">100% Operational</text>
+
+    <!-- Card 2 -->
+    <g transform="translate(305, 0)">
+      <rect width="285" height="75" fill="#f8f9fa" stroke="#ced4da" stroke-width="1"/>
+      <text x="16" y="24" fill="#6c757d" font-size="11" font-weight="bold">RECORDED EVENTS (TODAY)</text>
+      <text x="16" y="54" fill="#111111" font-size="22" font-weight="bold">142 Incidents</text>
+      <text x="165" y="52" fill="#495057" font-size="11">12 Pending Review</text>
+    </g>
+
+    <!-- Card 3 -->
+    <g transform="translate(610, 0)">
+      <rect width="285" height="75" fill="#f8f9fa" stroke="#ced4da" stroke-width="1"/>
+      <text x="16" y="24" fill="#6c757d" font-size="11" font-weight="bold">AVERAGE DENSITY RATIO</text>
+      <text x="16" y="54" fill="#111111" font-size="22" font-weight="bold">0.42 persons/m²</text>
+      <text x="185" y="52" fill="#495057" font-size="11">Normal Range</text>
+    </g>
+
+    <!-- Card 4 -->
+    <g transform="translate(915, 0)">
+      <rect width="340" height="75" fill="#f8f9fa" stroke="#ced4da" stroke-width="1"/>
+      <text x="16" y="24" fill="#6c757d" font-size="11" font-weight="bold">PARKING OCCUPANCY RATE</text>
+      <text x="16" y="54" fill="#111111" font-size="22" font-weight="bold">84% Occupied</text>
+      <text x="175" y="52" fill="#495057" font-size="11">168 / 200 Bays</text>
+    </g>
+  </g>
+
+  <!-- Main Grid: Two Video Tile Outlines (Left) + Incident Feed (Right) -->
+  <g transform="translate(25, 180)">
+    <!-- Video Tile 1 Wireframe -->
+    <g transform="translate(0, 0)" font-family="system-ui, sans-serif">
+      <rect width="445" height="280" fill="#ffffff" stroke="#343a40" stroke-width="1.5"/>
+      <rect width="445" height="28" fill="#f1f3f5" stroke="#ced4da" stroke-width="1"/>
+      <text x="12" y="18" fill="#111111" font-size="11" font-weight="bold">CAM-01: Railway Platform 2 North [Simulated Feed]</text>
+      <text x="430" y="18" text-anchor="end" fill="#6c757d" font-family="monospace" font-size="10">15 FPS | 1080p</text>
+
+      <!-- Video Area Wireframe Elements -->
+      <g transform="translate(0, 28)">
+        <rect width="445" height="252" fill="#fafafa"/>
+        <!-- Perspective grid lines -->
+        <line x1="30" y1="240" x2="180" y2="30" stroke="#dee2e6" stroke-width="1"/>
+        <line x1="415" y1="240" x2="265" y2="30" stroke="#dee2e6" stroke-width="1"/>
+
+        <!-- BBox 1 -->
+        <rect x="70" y="80" width="35" height="85" fill="none" stroke="#212529" stroke-width="1.5"/>
+        <rect x="70" y="66" width="65" height="14" fill="#343a40"/>
+        <text x="73" y="77" fill="#ffffff" font-family="monospace" font-size="9">Person 0.94</text>
+
+        <!-- BBox 2 -->
+        <rect x="130" y="100" width="40" height="90" fill="none" stroke="#212529" stroke-width="1.5"/>
+        <rect x="130" y="86" width="65" height="14" fill="#343a40"/>
+        <text x="133" y="97" fill="#ffffff" font-family="monospace" font-size="9">Person 0.89</text>
+
+        <!-- BBox 3 (Warning Dwell) -->
+        <rect x="220" y="75" width="38" height="80" fill="none" stroke="#212529" stroke-width="2"/>
+        <rect x="220" y="61" width="65" height="14" fill="#212529"/>
+        <text x="223" y="72" fill="#ffffff" font-family="monospace" font-size="9">Person 0.91</text>
+
+        <!-- Polygon Zone Boundary -->
+        <polygon points="50,210 200,75 255,75 120,210" fill="#e9ecef" fill-opacity="0.5" stroke="#495057" stroke-width="1.5" stroke-dasharray="4,2"/>
+        <text x="70" y="200" fill="#212529" font-size="10" font-weight="bold">ZONE: Platform Edge (Warning Active)</text>
+      </g>
+    </g>
+
+    <!-- Video Tile 2 Wireframe -->
+    <g transform="translate(465, 0)" font-family="system-ui, sans-serif">
+      <rect width="445" height="280" fill="#ffffff" stroke="#343a40" stroke-width="1.5"/>
+      <rect width="445" height="28" fill="#f1f3f5" stroke="#ced4da" stroke-width="1"/>
+      <text x="12" y="18" fill="#111111" font-size="11" font-weight="bold">CAM-04: North Parking Lot Zone B [Simulated Feed]</text>
+      <text x="430" y="18" text-anchor="end" fill="#6c757d" font-family="monospace" font-size="10">12 FPS | 1080p</text>
+
+      <g transform="translate(0, 28)">
+        <rect width="445" height="252" fill="#fafafa"/>
+
+        <!-- Bay 1 (Occupied) -->
+        <polygon points="40,150 120,150 100,210 10,210" fill="#e9ecef" stroke="#212529" stroke-width="1.5"/>
+        <text x="30" y="190" fill="#111111" font-family="monospace" font-size="9" font-weight="bold">B-01 [OCCUPIED]</text>
+
+        <!-- Bay 2 (Empty) -->
+        <polygon points="140,150 220,150 200,210 110,210" fill="#ffffff" stroke="#6c757d" stroke-width="1.5"/>
+        <text x="135" y="190" fill="#495057" font-family="monospace" font-size="9" font-weight="bold">B-02 [AVAILABLE]</text>
+
+        <!-- Bay 3 (Occupied Vehicle) -->
+        <polygon points="240,150 320,150 300,210 210,210" fill="#e9ecef" stroke="#212529" stroke-width="1.5"/>
+        <rect x="235" y="160" width="70" height="40" fill="none" stroke="#212529" stroke-width="1.5"/>
+        <text x="235" y="190" fill="#111111" font-family="monospace" font-size="9" font-weight="bold">B-03 [CAR 0.95]</text>
+
+        <!-- Bay 4 (Empty) -->
+        <polygon points="340,150 420,150 400,210 310,210" fill="#ffffff" stroke="#6c757d" stroke-width="1.5"/>
+        <text x="335" y="190" fill="#495057" font-family="monospace" font-size="9" font-weight="bold">B-04 [AVAILABLE]</text>
+      </g>
+    </g>
+
+    <!-- Right Side: Real-Time Incident Feed -->
+    <g transform="translate(930, 0)" font-family="system-ui, sans-serif">
+      <rect width="325" height="580" fill="#ffffff" stroke="#343a40" stroke-width="1.5"/>
+      <rect width="325" height="32" fill="#f1f3f5" stroke="#ced4da" stroke-width="1"/>
+      <text x="15" y="21" fill="#111111" font-size="12" font-weight="bold">REAL-TIME INCIDENT FEED [PROPOSED]</text>
+
+      <!-- Incident 1 -->
+      <g transform="translate(12, 45)">
+        <rect width="300" height="110" fill="#f8f9fa" stroke="#343a40" stroke-width="1"/>
+        <rect x="8" y="8" width="60" height="18" fill="#343a40"/>
+        <text x="38" y="20" text-anchor="middle" fill="#ffffff" font-size="9" font-weight="bold">CRITICAL</text>
+        <text x="75" y="20" fill="#6c757d" font-family="monospace" font-size="10">18:42:15 UTC</text>
+        <text x="10" y="44" fill="#111111" font-size="12" font-weight="bold">Zone Intrusion Detected</text>
+        <text x="10" y="62" fill="#495057" font-size="11">CAM-07 • Server Room East Corridor</text>
+        
+        <rect x="10" y="75" width="130" height="24" fill="#ffffff" stroke="#343a40" stroke-width="1"/>
+        <text x="75" y="90" text-anchor="middle" fill="#111111" font-size="10" font-weight="bold">Inspect Snapshot</text>
+        
+        <rect x="150" y="75" width="140" height="24" fill="#343a40"/>
+        <text x="220" y="90" text-anchor="middle" fill="#ffffff" font-size="10" font-weight="bold">Acknowledge Alert</text>
+      </g>
+
+      <!-- Incident 2 -->
+      <g transform="translate(12, 165)">
+        <rect width="300" height="110" fill="#f8f9fa" stroke="#ced4da" stroke-width="1"/>
+        <rect x="8" y="8" width="60" height="18" fill="#6c757d"/>
+        <text x="38" y="20" text-anchor="middle" fill="#ffffff" font-size="9" font-weight="bold">WARNING</text>
+        <text x="75" y="20" fill="#6c757d" font-family="monospace" font-size="10">18:39:02 UTC</text>
+        <text x="10" y="44" fill="#111111" font-size="12" font-weight="bold">Overcrowding Threshold (85%)</text>
+        <text x="10" y="62" fill="#495057" font-size="11">CAM-01 • Platform 2 Gate</text>
+
+        <rect x="10" y="75" width="130" height="24" fill="#ffffff" stroke="#343a40" stroke-width="1"/>
+        <text x="75" y="90" text-anchor="middle" fill="#111111" font-size="10" font-weight="bold">Inspect Snapshot</text>
+
+        <rect x="150" y="75" width="140" height="24" fill="#343a40"/>
+        <text x="220" y="90" text-anchor="middle" fill="#ffffff" font-size="10" font-weight="bold">Acknowledge Alert</text>
+      </g>
+
+      <!-- Incident 3 -->
+      <g transform="translate(12, 285)">
+        <rect width="300" height="110" fill="#f8f9fa" stroke="#ced4da" stroke-width="1"/>
+        <rect x="8" y="8" width="50" height="18" fill="#adb5bd"/>
+        <text x="33" y="20" text-anchor="middle" fill="#111111" font-size="9" font-weight="bold">INFO</text>
+        <text x="65" y="20" fill="#6c757d" font-family="monospace" font-size="10">18:31:40 UTC</text>
+        <text x="10" y="44" fill="#111111" font-size="12" font-weight="bold">Queue Congestion (Length: 9)</text>
+        <text x="10" y="62" fill="#495057" font-size="11">CAM-03 • Cafe Checkout Counter</text>
+
+        <rect x="10" y="75" width="130" height="24" fill="#ffffff" stroke="#343a40" stroke-width="1"/>
+        <text x="75" y="90" text-anchor="middle" fill="#111111" font-size="10" font-weight="bold">Inspect Snapshot</text>
+
+        <rect x="150" y="75" width="140" height="24" fill="#343a40"/>
+        <text x="220" y="90" text-anchor="middle" fill="#ffffff" font-size="10" font-weight="bold">Acknowledge Alert</text>
+      </g>
+
+      <!-- Incident 4 -->
+      <g transform="translate(12, 405)">
+        <rect width="300" height="95" fill="#f8f9fa" stroke="#ced4da" stroke-width="1"/>
+        <rect x="8" y="8" width="70" height="18" fill="#495057"/>
+        <text x="43" y="20" text-anchor="middle" fill="#ffffff" font-size="9" font-weight="bold">RESOLVED</text>
+        <text x="85" y="20" fill="#6c757d" font-family="monospace" font-size="10">18:22:10 UTC</text>
+        <text x="10" y="44" fill="#111111" font-size="12" font-weight="bold">Unattended Table Cleared</text>
+        <text x="10" y="62" fill="#495057" font-size="11">CAM-02 • Table 14 Serviced by staff</text>
+      </g>
+    </g>
+
+    <!-- Bottom Left: Fleet Health Table -->
+    <g transform="translate(0, 290)" font-family="system-ui, sans-serif" font-size="11">
+      <rect width="910" height="290" fill="#ffffff" stroke="#343a40" stroke-width="1.5"/>
+      <rect width="910" height="28" fill="#f1f3f5" stroke="#ced4da" stroke-width="1"/>
+      <text x="15" y="18" fill="#111111" font-weight="bold">CAMERA FLEET HEALTH &amp; TELEMETRY [PROPOSED UI TABLE]</text>
+
+      <!-- Table Header -->
+      <g transform="translate(15, 45)" fill="#6c757d" font-weight="bold">
+        <text x="0" y="0">CAMERA ID &amp; NAME</text>
+        <text x="240" y="0">LOCATION</text>
+        <text x="440" y="0">STATUS</text>
+        <text x="560" y="0">FPS</text>
+        <text x="650" y="0">LATENCY</text>
+        <text x="760" y="0">ACTIVE RULES</text>
+      </g>
+
+      <!-- Rows -->
+      <g transform="translate(15, 60)" fill="#212529">
+        <line x1="0" y1="0" x2="880" y2="0" stroke="#dee2e6" stroke-width="1"/>
+        <text x="0" y="20">CAM-01 Platform 2 North</text>
+        <text x="240" y="20" fill="#495057">Central Metro Station</text>
+        <text x="440" y="20">Streaming</text>
+        <text x="560" y="20">15.0</text>
+        <text x="650" y="20">38 ms</text>
+        <text x="760" y="20">Crowd Surge, Edge Safety</text>
+
+        <line x1="0" y1="35" x2="880" y2="35" stroke="#dee2e6" stroke-width="1"/>
+        <text x="0" y="55">CAM-02 Main Dining Room</text>
+        <text x="240" y="55" fill="#495057">Downtown Cafe</text>
+        <text x="440" y="55">Streaming</text>
+        <text x="560" y="55">10.0</text>
+        <text x="650" y="55">42 ms</text>
+        <text x="760" y="55">Table Turnover, Queue</text>
+
+        <line x1="0" y1="70" x2="880" y2="70" stroke="#dee2e6" stroke-width="1"/>
+        <text x="0" y="90">CAM-03 Food Court Queues</text>
+        <text x="240" y="90" fill="#495057">Downtown Cafe</text>
+        <text x="440" y="90">Streaming</text>
+        <text x="560" y="90">12.0</text>
+        <text x="650" y="90">35 ms</text>
+        <text x="760" y="90">Queue Length &gt; 6</text>
+
+        <line x1="0" y1="105" x2="880" y2="105" stroke="#dee2e6" stroke-width="1"/>
+        <text x="0" y="125">CAM-04 North Parking Lot</text>
+        <text x="240" y="125" fill="#495057">Commercial Plaza</text>
+        <text x="440" y="125">Streaming</text>
+        <text x="560" y="125">12.0</text>
+        <text x="650" y="125">40 ms</text>
+        <text x="760" y="125">Bay Occupancy, No-Parking</text>
+
+        <line x1="0" y1="140" x2="880" y2="140" stroke="#dee2e6" stroke-width="1"/>
+        <text x="0" y="160">CAM-07 Server Room East</text>
+        <text x="240" y="160" fill="#495057">HQ Facility</text>
+        <text x="440" y="160">Streaming</text>
+        <text x="560" y="160">15.0</text>
+        <text x="650" y="160">34 ms</text>
+        <text x="760" y="160">Restricted Zone Entry</text>
+      </g>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,58 @@
+flowchart TD
+    %% Monochrome Technical Styling
+    classDef actor fill:#f8f9fa,stroke:#343a40,stroke-width:1.5px,color:#111111;
+    classDef sys fill:#ffffff,stroke:#111111,stroke-width:2px,color:#111111;
+    classDef uc fill:#f8f9fa,stroke:#495057,stroke-width:1px,color:#111111;
+    classDef notif fill:#f8f9fa,stroke:#343a40,stroke-width:1.5px,color:#111111;
+
+    %% Actors
+    ADMIN["System Administrator"]:::actor
+    OPERATOR["Security / Monitoring Operator"]:::actor
+    MANAGER["Facility / Store Manager"]:::actor
+    CAM_SRC["Camera Source (IP / Video)"]:::actor
+    NOTIF_SVC["Notification Service"]:::notif
+    AI_SVC["AI Processing Service [Proposed]"]:::sys
+
+    subgraph SYSTEM["Lenz Video Intelligence Platform [Proposed Architecture]"]
+        UC1["Register & Configure Cameras"]:::uc
+        UC2["Draw Monitoring Zones & Set Thresholds"]:::uc
+        UC3["Upload Video for Offline Analysis"]:::uc
+        UC4["Stream Real-Time Ingested Video"]:::uc
+        UC5["Execute Detection & Tracking"]:::uc
+        UC6["Evaluate Spatial & Temporal Rules"]:::uc
+        UC7["Monitor Live Feeds & Detection Overlays"]:::uc
+        UC8["Receive Real-Time Incident Alerts"]:::uc
+        UC9["Review & Acknowledge Events"]:::uc
+        UC10["Inspect Video Evidence & Snapshots"]:::uc
+        UC11["View Crowd, Queue & Parking Analytics"]:::uc
+        UC12["Export Operational Audit & Incident Reports"]:::uc
+    end
+
+    %% Administrator Connections
+    ADMIN --> UC1
+    ADMIN --> UC2
+    ADMIN --> UC12
+
+    %% Operator Connections
+    OPERATOR --> UC7
+    OPERATOR --> UC8
+    OPERATOR --> UC9
+    OPERATOR --> UC10
+
+    %% Manager Connections
+    MANAGER --> UC11
+    MANAGER --> UC12
+    MANAGER --> UC3
+
+    %% Camera Source Connections
+    CAM_SRC --> UC4
+
+    %% AI Service Connections
+    UC4 --> UC5
+    UC3 --> UC5
+    UC5 --> UC6
+    UC6 --> UC8
+    UC6 --> UC11
+
+    %% External Notification Service
+    UC8 --> NOTIF_SVC
