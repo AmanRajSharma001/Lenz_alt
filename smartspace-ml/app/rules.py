@@ -184,6 +184,26 @@ def rule_needs_cleaning(
     frame: np.ndarray,
     object_seen_since: Dict[str, float],  # class_name → first video_time seen while EMPTY
 ) -> List[RuleCandidate]:
+    # Table-specific grounded cleanliness check
+    if cfg.type == "table":
+        if state.table_state == "unoccupied-dirty":
+            dirty_str = ", ".join(state.dirty_items) if state.dirty_items else "tableware/rubbish"
+            return [
+                RuleCandidate(
+                    event_type=EventType.NEEDS_CLEANING,
+                    zone_id=cfg.id,
+                    zone_name=cfg.name,
+                    camera_id=cfg.camera_id,
+                    reason=(
+                        f"Dining table '{cfg.name}' is unoccupied-dirty: {dirty_str} left behind."
+                    ),
+                    confidence=0.80,
+                    keyframes=[frame.copy()],
+                    metadata={"table_state": "unoccupied-dirty", "items": state.dirty_items},
+                )
+            ]
+        return []
+
     if state.state != ZoneStateEnum.EMPTY:
         return []
     candidates = []
@@ -214,6 +234,34 @@ def rule_needs_cleaning(
     for k in gone:
         del object_seen_since[k]
     return candidates
+
+
+def rule_parking(
+    cfg: ZoneConfig,
+    state: ZoneState,
+    vehicles_in_zone: List[Detection],
+    video_time: float,
+    frame: np.ndarray,
+) -> List[RuleCandidate]:
+    if cfg.type != "parking":
+        return []
+    if state.parking_state == "OCCUPIED" and vehicles_in_zone:
+        v_types = [v.class_name for v in vehicles_in_zone]
+        return [
+            RuleCandidate(
+                event_type=EventType.PARKING_OCCUPIED,
+                zone_id=cfg.id,
+                zone_name=cfg.name,
+                camera_id=cfg.camera_id,
+                reason=(
+                    f"Parking bay '{cfg.name}' occupied by {', '.join(v_types)}."
+                ),
+                confidence=0.85,
+                keyframes=[frame.copy()],
+                metadata={"vehicles": v_types, "count": len(vehicles_in_zone)},
+            )
+        ]
+    return []
 
 
 def rule_abandoned_object(

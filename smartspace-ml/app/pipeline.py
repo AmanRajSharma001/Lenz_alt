@@ -31,6 +31,7 @@ from app.rules import (
     rule_intrusion,
     rule_loitering,
     rule_needs_cleaning,
+    rule_parking,
 )
 from app.schemas import EventType, ZoneStateEnum
 from app.zones import ZoneConfig, ZoneRegistry
@@ -184,17 +185,48 @@ class Pipeline:
                 zone_state = self._registry.states[zone_id]
 
                 poly_px = cfg.polygon_px(annotated.shape[1], annotated.shape[0])
-                from app.zones import point_in_polygon
+                from app.zones import compute_polygon_bbox_overlap, point_in_polygon
 
-                # Filter detections by zone membership (bottom-center feet test)
-                persons_in = [
-                    p for p in result.persons
-                    if point_in_polygon(p.bottom_center[0], p.bottom_center[1], poly_px)
-                ]
-                objects_in = [
-                    o for o in result.objects
-                    if point_in_polygon(o.bottom_center[0], o.bottom_center[1], poly_px)
-                ]
+                vehicles_in: List[Detection] = []
+                tableware_in: List[Detection] = []
+                is_uncertain = False
+
+                if cfg.type == "parking":
+                    # Grounded parking evaluation using vehicle bounding box overlap
+                    for v in result.vehicles:
+                        oz, ob = compute_polygon_bbox_overlap(poly_px, v.bbox, annotated.shape[1], annotated.shape[0])
+                        if oz >= 0.30 or ob >= 0.35:
+                            vehicles_in.append(v)
+                        elif oz >= 0.10 or ob >= 0.10:
+                            is_uncertain = True
+                    persons_in = []
+                    objects_in = []
+                elif cfg.type == "table":
+                    # Grounded dining table evaluation
+                    persons_in = [
+                        p for p in result.persons
+                        if point_in_polygon(p.bottom_center[0], p.bottom_center[1], poly_px)
+                        or point_in_polygon(p.center[0], p.center[1], poly_px)
+                        or compute_polygon_bbox_overlap(poly_px, p.bbox, annotated.shape[1], annotated.shape[0])[1] >= 0.15
+                    ]
+                    tableware_in = [
+                        o for o in result.tableware
+                        if point_in_polygon(o.bottom_center[0], o.bottom_center[1], poly_px)
+                        or point_in_polygon(o.center[0], o.center[1], poly_px)
+                        or compute_polygon_bbox_overlap(poly_px, o.bbox, annotated.shape[1], annotated.shape[0])[0] >= 0.05
+                    ]
+                    objects_in = tableware_in
+                else:
+                    # Grounded floor / restricted / queue / general: strict ground-contact feet test
+                    persons_in = [
+                        p for p in result.persons
+                        if point_in_polygon(p.bottom_center[0], p.bottom_center[1], poly_px)
+                    ]
+                    objects_in = [
+                        o for o in result.objects
+                        if point_in_polygon(o.bottom_center[0], o.bottom_center[1], poly_px)
+                    ]
+
                 poses_in = [
                     pr for pr in result.poses
                     if any(pr.track_id == p.track_id for p in persons_in)
@@ -218,6 +250,9 @@ class Pipeline:
                     motion_score=motion_score,
                     objects_in_zone=obj_names,
                     cfg=cfg,
+                    vehicle_count=len(vehicles_in),
+                    tableware_in_zone=[t.class_name for t in tableware_in],
+                    is_uncertain=is_uncertain,
                 )
                 self._prev_counts[zone_id] = len(persons_in)
 
@@ -239,6 +274,7 @@ class Pipeline:
                     cfg, zone_state, objects_in, video_time, raw,
                     self._object_seen_since.setdefault(zone_id, {})
                 )
+                candidates += rule_parking(cfg, zone_state, vehicles_in, video_time, raw)
                 candidates += rule_fall(cfg, zone_state, persons_in, poses_in, video_time, raw, self._prev_aspect)
                 candidates += rule_fight(cfg, zone_state, persons_in, poses_in, video_time, raw, self._prev_poses)
 
@@ -416,15 +452,22 @@ class Pipeline:
 
     _STATE_COLOURS = {
         ZoneStateEnum.EMPTY: (0, 200, 0),         # green
+        ZoneStateEnum.AVAILABLE: (0, 200, 0),     # green
         ZoneStateEnum.OCCUPIED: (0, 165, 255),     # amber
         ZoneStateEnum.IDLE_OCCUPIED: (0, 0, 220),  # red
         ZoneStateEnum.NEEDS_ATTENTION: (128, 0, 128),  # purple
+        ZoneStateEnum.UNCERTAIN: (0, 215, 255),    # yellow
     }
 
     def _draw_zone(self, frame: np.ndarray, cfg: ZoneConfig, state, video_time: float) -> None:
         poly_px = cfg.polygon_px(frame.shape[1], frame.shape[0])
         pts = np.array([[int(x), int(y)] for x, y in poly_px], dtype=np.int32)
         colour = self._STATE_COLOURS.get(state.state, (200, 200, 200))
+
+        # Check for dirty table warning tint
+        if cfg.type == "table" and state.table_state == "unoccupied-dirty":
+            colour = (0, 140, 255)  # orange/warning for dirty table
+
         # Semi-transparent fill
         overlay = frame.copy()
         cv2.fillPoly(overlay, [pts], colour)
@@ -434,7 +477,14 @@ class Pipeline:
         cx = int(np.mean(pts[:, 0]))
         cy = int(np.mean(pts[:, 1]))
         dwell = state.dwell_seconds(video_time)
-        label = f"{cfg.name} | {state.state.value} | {dwell:.0f}s | {state.people_count}p"
+        if cfg.type == "table" and state.table_state:
+            badge = state.table_state.upper()
+            label = f"{cfg.name} | {badge} | {dwell:.0f}s"
+        elif cfg.type == "parking" and state.parking_state:
+            badge = state.parking_state
+            label = f"{cfg.name} | {badge} | {dwell:.0f}s"
+        else:
+            label = f"{cfg.name} | {state.state.value} | {dwell:.0f}s | {state.people_count}p"
         cv2.putText(frame, label, (cx - 60, cy), cv2.FONT_HERSHEY_SIMPLEX, 0.4, colour, 1)
 
 

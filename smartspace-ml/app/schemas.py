@@ -13,9 +13,19 @@ from pydantic import BaseModel, Field
 
 class ZoneType(str, Enum):
     table = "table"
+    parking = "parking"
     queue = "queue"
     restricted = "restricted"
     general = "general"
+    hazard = "hazard"
+    transit = "transit"
+
+
+class TableStateEnum(str, Enum):
+    occupied = "occupied"
+    unoccupied_clean = "unoccupied-clean"
+    unoccupied_dirty = "unoccupied-dirty"
+    uncertain = "uncertain"
 
 
 class ZoneCreate(BaseModel):
@@ -55,6 +65,8 @@ class ZoneStateEnum(str, Enum):
     OCCUPIED = "OCCUPIED"
     IDLE_OCCUPIED = "IDLE_OCCUPIED"
     NEEDS_ATTENTION = "NEEDS_ATTENTION"
+    AVAILABLE = "AVAILABLE"
+    UNCERTAIN = "UNCERTAIN"
 
 
 class LiveZoneState(BaseModel):
@@ -67,6 +79,9 @@ class LiveZoneState(BaseModel):
     people_count: int
     motion_score: float
     objects_in_zone: List[str] = Field(default_factory=list)
+    table_state: Optional[str] = None
+    parking_state: Optional[str] = None
+    vehicle_count: int = 0
     snapshot_path: Optional[str] = None
 
 
@@ -82,6 +97,10 @@ class EventType(str, Enum):
     CROWD_SURGE = "CROWD_SURGE"
     FALL = "FALL"
     FIGHT = "FIGHT"
+    PARKING_OCCUPIED = "PARKING_OCCUPIED"
+    PARKING_VACATED = "PARKING_VACATED"
+    TABLE_OCCUPIED = "TABLE_OCCUPIED"
+    TABLE_CLEANED = "TABLE_CLEANED"
 
 
 class Event(BaseModel):

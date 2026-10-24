@@ -8,15 +8,16 @@ import time
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Sequence, Tuple
 
+import cv2
 import numpy as np
 
 from app.config import settings
-from app.schemas import ZoneStateEnum, ZoneType
+from app.schemas import TableStateEnum, ZoneStateEnum, ZoneType
 
 logger = logging.getLogger(__name__)
 
 
-# ── Point-in-polygon (ray-casting) ───────────────────────────────────────────
+# ── Point-in-polygon & Polygon-Bbox Overlap ─────────────────────────────────
 
 def point_in_polygon(px: float, py: float, polygon: Sequence[Tuple[float, float]]) -> bool:
     """
@@ -37,6 +38,57 @@ def point_in_polygon(px: float, py: float, polygon: Sequence[Tuple[float, float]
             inside = not inside
         j = i
     return inside
+
+
+def compute_polygon_bbox_overlap(
+    poly_px: Sequence[Tuple[float, float]],
+    bbox: Tuple[float, float, float, float],
+    frame_w: int,
+    frame_h: int,
+) -> Tuple[float, float]:
+    """
+    Computes (overlap_zone_fraction, overlap_bbox_fraction).
+    Returns (0.0, 0.0) if there is no intersection.
+    """
+    x1, y1, x2, y2 = bbox
+    bbox_w = max(1.0, x2 - x1)
+    bbox_h = max(1.0, y2 - y1)
+    bbox_area = bbox_w * bbox_h
+
+    pts = np.array(poly_px, dtype=np.int32)
+    zone_area = float(cv2.contourArea(pts))
+    if zone_area <= 1.0 or bbox_area <= 1.0:
+        return 0.0, 0.0
+
+    zx, zy, zw, zh = cv2.boundingRect(pts)
+    if x1 >= zx + zw or x2 <= zx or y1 >= zy + zh or y2 <= zy:
+        return 0.0, 0.0
+
+    min_x = max(0, min(int(x1), zx))
+    min_y = max(0, min(int(y1), zy))
+    max_x = min(frame_w, max(int(x2), zx + zw))
+    max_y = min(frame_h, max(int(y2), zy + zh))
+
+    mw = max_x - min_x
+    mh = max_y - min_y
+    if mw <= 0 or mh <= 0:
+        return 0.0, 0.0
+
+    m_zone = np.zeros((mh, mw), dtype=np.uint8)
+    m_bbox = np.zeros((mh, mw), dtype=np.uint8)
+
+    local_poly = pts - np.array([min_x, min_y], dtype=np.int32)
+    cv2.fillPoly(m_zone, [local_poly], 255)
+
+    bx1 = max(0, int(x1) - min_x)
+    by1 = max(0, int(y1) - min_y)
+    bx2 = min(mw, int(x2) - min_x)
+    by2 = min(mh, int(y2) - min_y)
+    cv2.rectangle(m_bbox, (bx1, by1), (bx2, by2), 255, -1)
+
+    inter_mask = cv2.bitwise_and(m_zone, m_bbox)
+    inter_area = float(cv2.countNonZero(inter_mask))
+    return min(1.0, inter_area / zone_area), min(1.0, inter_area / bbox_area)
 
 
 # ── Zone descriptor ───────────────────────────────────────────────────────────
@@ -80,8 +132,12 @@ class ZoneState:
 
     # live metrics
     people_count: int = 0
+    vehicle_count: int = 0
     motion_score: float = 0.0
     objects_in_zone: List[str] = field(default_factory=list)
+    table_state: Optional[str] = None
+    parking_state: Optional[str] = None
+    dirty_items: List[str] = field(default_factory=list)
 
     # per-track dwell bookkeeping  {track_id: first_seen_video_time}
     track_first_seen: Dict[int, float] = field(default_factory=dict)
@@ -97,12 +153,16 @@ class ZoneState:
         motion_score: float,
         objects_in_zone: List[str],
         cfg: ZoneConfig,
+        vehicle_count: int = 0,
+        tableware_in_zone: Optional[List[str]] = None,
+        is_uncertain: bool = False,
     ) -> Optional[str]:
         """
         Feed the current frame's observations.
         Returns the new state name if a transition occurred, else None.
         """
         self.people_count = people_count
+        self.vehicle_count = vehicle_count
         self.motion_score = motion_score
         self.objects_in_zone = objects_in_zone
 
@@ -115,10 +175,34 @@ class ZoneState:
         for tid in gone:
             del self.track_first_seen[tid]
 
-        occupied_now = people_count > 0
+        # Determine occupancy based on zone type
+        if cfg.type == "parking":
+            occupied_now = vehicle_count > 0
+            if occupied_now:
+                self.parking_state = "OCCUPIED"
+            elif is_uncertain:
+                self.parking_state = "UNCERTAIN"
+            else:
+                self.parking_state = "AVAILABLE"
+        elif cfg.type == "table":
+            occupied_now = people_count > 0
+            if people_count > 0:
+                self.table_state = "occupied"
+                self.dirty_items = []
+            elif tableware_in_zone:
+                self.table_state = "unoccupied-dirty"
+                self.dirty_items = list(tableware_in_zone)
+            elif is_uncertain:
+                self.table_state = "uncertain"
+            else:
+                self.table_state = "unoccupied-clean"
+                self.dirty_items = []
+        else:
+            occupied_now = people_count > 0
+
         transition: Optional[str] = None
 
-        if self.state == ZoneStateEnum.EMPTY:
+        if self.state in (ZoneStateEnum.EMPTY, ZoneStateEnum.AVAILABLE):
             if occupied_now:
                 if self._enter_candidate_since is None:
                     self._enter_candidate_since = video_time
@@ -139,7 +223,8 @@ class ZoneState:
                         self._last_occupied_at if self._last_occupied_at is not None else video_time
                     )
                 if video_time - self._exit_candidate_since >= settings.OCCUPY_EXIT_S:
-                    transition = self._transition(ZoneStateEnum.EMPTY, video_time)
+                    target_empty = ZoneStateEnum.AVAILABLE if cfg.type == "parking" else ZoneStateEnum.EMPTY
+                    transition = self._transition(target_empty, video_time)
                     self._exit_candidate_since = None
                     self._last_occupied_at = None
 

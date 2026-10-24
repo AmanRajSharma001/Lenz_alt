@@ -72,55 +72,42 @@ Lenz is an AI-powered video intelligence platform that transforms standard CCTV 
 Lenz/
 ├── README.md                        # This file
 ├── LICENSE                          # MIT License
+├── .gitignore                       # Repository exclusion rules
 │
 ├── docs/                            # Architecture diagrams and visual assets
 │   ├── README_ASSETS.md             # Asset index and description
 │   ├── diagrams/                    # Mermaid source files (.mmd)
-│   │   ├── system-architecture.mmd
-│   │   ├── ai-pipeline.mmd
-│   │   ├── data-flow.mmd
-│   │   ├── system-workflow.mmd
-│   │   ├── database-er.mmd
-│   │   └── use-case.mmd
-│   └── images/                      # Rendered PNG/SVG exports
-│       ├── lenz-hero.png
-│       ├── system-architecture.png
-│       ├── ai-pipeline.png
-│       ├── system-workflow.png
-│       ├── database-er.png
-│       ├── use-case.png
-│       ├── data-flow.png
-│       ├── dashboard-mockup.png
-│       ├── problem-vs-solution.png
-│       └── analytics/               # Illustrative operational analytics charts
+│   └── images/                      # Rendered PNG/SVG exports & analytics charts
 │
 ├── experiments/
 │   └── webcam_occupancy/            # Standalone webcam prototype (RUNNABLE)
-│       ├── webcam_test.py           # Main script — multi-class detection + zone rules
+│       ├── webcam_test.py           # Main script — multi-class detection, tracking & zone rules
 │       ├── test_prototype.py        # 12 automated unit tests (all passing)
 │       ├── requirements.txt         # Minimal dependencies
-│       └── README.md                # Detailed usage guide
+│       └── README.md                # Detailed usage guide & keyboard shortcuts
 │
-└── smartspace-ml/                   # Full ML pipeline prototype (RUNNABLE)
-    ├── app/
-    │   ├── config.py                # Settings loaded from .env
-    │   ├── db.py                    # SQLite schema, migrations & CRUD
-    │   ├── detector.py              # YOLO detection + ByteTrack tracking
-    │   ├── gemma.py                 # Local Gemma client (Mock/Transformers/LlamaCpp)
-    │   ├── incidents.py             # Evidence clip packager & SHA-256 hasher
-    │   ├── main.py                  # FastAPI REST, WebSocket & MJPEG app
-    │   ├── motion.py                # Multi-factor idle & motion scoring
-    │   ├── pipeline.py              # Main video processing loop & rule dispatcher
-    │   ├── rules.py                 # In-vain, cleaning, intrusion, loitering, crowd
-    │   ├── schemas.py               # Pydantic models for zones, events, incidents
-    │   └── zones.py                 # Point-in-polygon & ZoneState state machine
-    ├── tests/                       # 44 automated tests across 7 test files
-    ├── evidence/                    # Saved incident clips & keyframes (runtime)
-    ├── .env.example                 # Environment configuration template
-    ├── make_test_video.py           # Synthetic test video generator
-    ├── run_demo.py                  # Standalone CLI demo runner
-    ├── requirements.txt
-    └── README.md                    # Full smartspace-ml usage guide
+├── smartspace-ml/                   # Full ML pipeline prototype (RUNNABLE)
+│   ├── app/                         # Detector, zones, rules, pipeline, motion, FastAPI
+│   ├── tests/                       # 44 automated tests across 7 test files
+│   ├── evidence/                    # Saved incident clips & keyframes (runtime)
+│   ├── .env.example                 # Environment configuration template
+│   ├── make_test_video.py           # Synthetic test video generator
+│   ├── run_demo.py                  # Standalone CLI demo runner
+│   ├── zones.json                   # Calibrated zones (table, parking, queue, restricted)
+│   ├── requirements.txt
+│   └── README.md                    # Full smartspace-ml usage guide
+│
+├── training/                        # Custom YOLO fine-tuning & evaluation suite
+│   ├── train.py                     # Training entry point (supports Apple Silicon MPS & CPU)
+│   ├── dataset_validator.py         # Dataset integrity, annotation bounds & leakage audit
+│   ├── evaluate.py                  # Offline evaluation on untouched test split
+│   └── README.md                    # Detailed training & annotation guide
+│
+├── datasets/                        # Standardized dataset directory
+│   └── lenz_table_condition/        # Table cleanliness & occupancy dataset (data.yaml, splits)
+│
+└── tests/                           # Top-level regression test suite
+    └── test_lenz_regression.py      # 15 end-to-end regression test cases (all passing)
 ```
 
 ---
@@ -241,39 +228,101 @@ TELEGRAM_CHAT_ID=              # Optional: for alert notifications
 | Person & Vehicle Detection | ✅ Working | ✅ Working |
 | Multi-Object Tracking (ByteTrack) | ✅ Working | ✅ Working |
 | Zone-Based Occupancy | ✅ Working | ✅ Working |
+| Table Cleanliness & Occupancy | ✅ Working (3 states) | ✅ Working (3 states) |
 | Smart Parking Bay Monitoring | ✅ Working | ✅ Working |
 | Crowd Density & Surge | ✅ Working | ✅ Working |
 | Queue / Waiting Area Congestion | ✅ Working | ✅ Working |
-| Restricted Area Intrusion | ✅ Working | ✅ Working |
+| Restricted Area Intrusion | ✅ Working (Ground-Contact) | ✅ Working (Ground-Contact) |
 | Loitering & Unattended Items | ✅ Working | ✅ Working |
 | In-Vain / Idle Detection | — | ✅ Working |
 | Local VLM Verification (Gemma) | — | ✅ Working (mock) |
 | Incident Evidence Packaging | — | ✅ Working |
+| Custom Model Fine-Tuning | ✅ Working (`training/`) | ✅ Working (`training/`) |
 | FastAPI REST + WebSocket + MJPEG | — | ✅ Working |
 
 ---
 
-## Running Tests
+## Table Occupancy & Cleanliness States
 
-### Webcam Prototype Tests
+Lenz implements the grounded 3-state table condition model described in the specification:
 
+1. **`occupied`**: Person is seated or standing at the table, or active work items (`laptop`, `phone`) are in use at the table.
+2. **`unoccupied-clean`**: The table is unoccupied and visibly sanitized with zero leftover dishes, tableware, or rubbish. Ready for the next guest.
+3. **`unoccupied-dirty`**: The table is unoccupied by people, but leftover tableware (`cup`, `bottle`, `wine glass`, `bowl`, `plate`, `fork`, `knife`, `spoon`) or food debris remain. Emits a `TABLE_NEEDS_CLEANING` alert.
+4. **`uncertain`**: Borderline or occluded observations during transition frames, preventing state flickering.
+
+Empty background, wall, or floor pixels are never identified as tables. Only configured physical table polygons or detected table anchors are assessed.
+
+---
+
+## Custom Model Training & Evaluation
+
+When custom fine-tuning is required (e.g. for specialized uniforms, domain-specific tableware, or custom seat configurations):
+
+### 1. Validate Dataset Integrity
 ```bash
-cd experiments/webcam_occupancy
-source .venv/bin/activate
-python -m pytest test_prototype.py -v
+python training/dataset_validator.py --data datasets/lenz_table_condition/data.yaml
+```
+Audits bounding box ranges $[0.0, 1.0]$, checks image readability, verifies class distribution, and checks for zero data leakage between splits.
+
+### 2. Run Reproducible Training (Apple Silicon MPS / CPU)
+```bash
+python training/train.py \
+  --model yolo11n.pt \
+  --data datasets/lenz_table_condition/data.yaml \
+  --epochs 30 \
+  --batch 8 \
+  --imgsz 640 \
+  --device auto \
+  --project runs/train \
+  --name lenz_table_condition
+```
+Automatically detects Apple Silicon Metal Performance Shaders (MPS) for hardware acceleration. Saves `best.pt` and metrics to `runs/train/lenz_table_condition/`.
+
+### 3. Evaluate on Untouched Test Split
+```bash
+python training/evaluate.py \
+  --weights runs/train/lenz_table_condition/weights/best.pt \
+  --data datasets/lenz_table_condition/data.yaml \
+  --split test
 ```
 
-All 12 tests cover zone logic, occupancy smoothing, detection filtering, and tracker integration.
+---
 
-### SmartSpace ML Pipeline Tests
+## Running the Automated Test Suites (71 Tests Total)
 
+### 1. Run the Entire Project Test Suite (All 71 Tests)
 ```bash
-cd smartspace-ml
-source venv/bin/activate
-python -m pytest tests/ -v
+python -m pytest tests/ smartspace-ml/tests/ experiments/webcam_occupancy/test_prototype.py -v
 ```
 
-44 tests across 7 test files covering zones, rules, motion, incidents, database, pipeline, and API endpoints.
+### 2. Comprehensive Spatial & Regression Test Suite (15 Cases)
+```bash
+python -m pytest tests/test_lenz_regression.py -v
+```
+Covers:
+- Person inside valid monitored region
+- Person bbox extending into sky but feet ground-contact point outside (strict rejection)
+- Car inside parking slot vs car on road
+- Genuinely empty parking slot (`AVAILABLE`)
+- Visible table: occupied vs unoccupied-clean vs unoccupied-dirty
+- Partially occluded / borderline table (`UNCERTAIN`)
+- Restricted area entry and departure
+- Loitering dwell time alert
+- Crowd surge threshold warning
+- Debouncing transient 1-frame glitches
+- Ambiguous detection handling
+- Clean zero-detection frames
+
+### 3. SmartSpace ML Pipeline Tests (44 Tests)
+```bash
+cd smartspace-ml && python -m pytest tests/ -v
+```
+
+### 4. Webcam Prototype Tests (12 Tests)
+```bash
+cd experiments/webcam_occupancy && python -m pytest test_prototype.py -v
+```
 
 ---
 
@@ -286,18 +335,18 @@ The YOLO model supports **80 COCO object classes**, including:
 - **Personal Belongings:** `backpack`, `handbag`, `suitcase`, `umbrella`
 - **Workplace & Electronics:** `laptop`, `cell phone`, `mouse`, `keyboard`, `tv`, `remote`, `book`
 - **Furniture:** `chair`, `bench`, `couch`, `dining table`, `bed`
-- **Tableware:** `bottle`, `cup`, `wine glass`, `bowl`, `fork`, `knife`, `spoon`
+- **Tableware:** `bottle`, `cup`, `wine glass`, `bowl`, `plate`, `fork`, `knife`, `spoon`
 
 Detection results depend on visibility, lighting, distance, and occlusion in the camera feed.
 
 ---
 
-## Limitations & Honest Scope
+## Spatial Grounding & Honest Scope
 
-- **Zone-based occupancy** uses spatial containment (bounding-box centroid inside polygon), **not** posture recognition. A standing person in a zone and a seated person in a zone both register as `OCCUPIED`.
-- **COCO classes** are used as-is. A "bag" in the README maps to `backpack`, `handbag`, and `suitcase` — all three are detected and counted separately.
-- **Gemma VLM** runs in `mock` mode by default. Production use requires a local Gemma model download (several GB).
-- **Performance** is CPU-optimised for MacBook-class hardware using the nano-scale YOLO model. GPU acceleration is supported if available via PyTorch.
+- **Ground-Contact Evaluation:** For floor, queue, and restricted zones, Lenz evaluates the tracked person's **bottom-center ground contact point** `(x_center, y_max)`, rather than the top of the bounding box. A person standing outside a restricted zone whose head or bounding box projects over the zone in perspective projection will **not** trigger an intrusion.
+- **Physical Region Grounding:** Background pixels, ceiling, sky, or unmonitored floors are **never** classified as available parking slots or clean tables. A region must be a configured physical polygon or detected anchor object.
+- **COCO Class Mapping:** A "bag" maps natively to `backpack`, `handbag`, and `suitcase` — all three are tracked and counted separately.
+- **Hardware Acceleration:** Native Apple Silicon Metal (MPS) support with automatic CPU fallback. Full compatibility on macOS and Linux.
 
 ---
 

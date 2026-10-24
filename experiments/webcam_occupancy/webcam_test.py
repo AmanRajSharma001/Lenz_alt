@@ -95,6 +95,7 @@ CLASS_COLORS = {
 VEHICLE_CLASSES = {"car", "truck", "bus", "motorcycle", "bicycle"}
 PERSONAL_ITEM_CLASSES = {"backpack", "handbag", "suitcase", "laptop"}
 PURPOSEFUL_TABLE_CLASSES = {"laptop", "bottle", "cup", "cell phone", "book", "bowl"}
+TABLEWARE_CLASSES = {"cup", "bottle", "wine glass", "bowl", "plate", "fork", "knife", "spoon"}
 
 
 # ── Model Resolution ──────────────────────────────────────────────────────────
@@ -242,6 +243,12 @@ class LenzRuleEngine:
         self.zone_occupancy_history: Dict[str, Deque[bool]] = {
             z.zone_id: collections.deque(maxlen=debounce_window) for z in zones
         }
+        self.zone_person_history: Dict[str, Deque[bool]] = {
+            z.zone_id: collections.deque(maxlen=debounce_window) for z in zones
+        }
+        self.zone_tableware_history: Dict[str, Deque[bool]] = {
+            z.zone_id: collections.deque(maxlen=debounce_window) for z in zones
+        }
 
         # Unattended item state: {track_id: first_seen_alone_timestamp}
         self.unattended_candidates: Dict[int, float] = {}
@@ -272,56 +279,144 @@ class LenzRuleEngine:
         for zone in self.zones:
             in_zone_dets: List[TrackedDetection] = []
 
-            for det in detections:
-                if det.class_name not in zone.target_classes and "all" not in zone.target_classes:
-                    continue
-
-                overlap_zone, overlap_det = zone.compute_overlap(det.bbox, frame_w, frame_h)
-                bx, by = det.bottom_center
-                cx, cy = det.center
-
-                # Spatial classification criteria
-                if zone.zone_type == "parking":
-                    # Vehicles occupy parking slot if overlap exceeds 30%
-                    if overlap_zone > 0.30 or overlap_det > 0.40:
+            if zone.zone_type == "parking":
+                # Vehicles occupy parking slot if overlap exceeds 30% or det overlap exceeds 35%
+                for det in detections:
+                    if det.class_name not in zone.target_classes and "all" not in zone.target_classes:
+                        continue
+                    overlap_zone, overlap_det = zone.compute_overlap(det.bbox, frame_w, frame_h)
+                    if overlap_zone >= 0.30 or overlap_det >= 0.35:
                         in_zone_dets.append(det)
-                elif zone.zone_type == "table":
-                    # Person at table: feet in zone OR center in zone with overlap OR significant overlap
-                    if (
-                        zone.contains_point(bx, by, frame_w, frame_h)
-                        or (zone.contains_point(cx, cy, frame_w, frame_h) and overlap_det > 0.15)
-                        or (overlap_zone > 0.25)
-                    ):
-                        in_zone_dets.append(det)
+
+                # Temporal smoothing for parking slot
+                hist = self.zone_occupancy_history[zone.zone_id]
+                hist.append(len(in_zone_dets) > 0)
+                true_ratio = sum(1 for h in hist if h) / max(1, len(hist))
+
+                if len(hist) < 2:
+                    smoothed_state = "UNCERTAIN"
+                    parking_state = "UNCERTAIN"
+                elif true_ratio >= 0.60:
+                    smoothed_state = "OCCUPIED"
+                    parking_state = "OCCUPIED"
+                elif true_ratio <= 0.40:
+                    smoothed_state = "AVAILABLE"
+                    parking_state = "AVAILABLE"
                 else:
-                    # General / Restricted / Queue: bottom-center contact test
-                    if zone.contains_point(bx, by, frame_w, frame_h) or overlap_zone > 0.25:
+                    smoothed_state = "UNCERTAIN"
+                    parking_state = "UNCERTAIN"
+
+                results["zone_states"][zone.zone_id] = {
+                    "name": zone.name,
+                    "type": zone.zone_type,
+                    "state": smoothed_state,
+                    "parking_state": parking_state,
+                    "count": len(in_zone_dets),
+                    "detections": in_zone_dets,
+                }
+
+            elif zone.zone_type == "table":
+                # Grounded table condition classification: occupied, unoccupied-clean, unoccupied-dirty
+                table_people: List[TrackedDetection] = []
+                table_dirty: List[TrackedDetection] = []
+
+                for det in detections:
+                    overlap_zone, overlap_det = zone.compute_overlap(det.bbox, frame_w, frame_h)
+                    bx, by = det.bottom_center
+                    cx, cy = det.center
+
+                    # Person or work item at table
+                    if det.class_name == "person" or det.class_name in {"laptop", "book"}:
+                        if (
+                            zone.contains_point(bx, by, frame_w, frame_h)
+                            or (zone.contains_point(cx, cy, frame_w, frame_h) and overlap_det > 0.15)
+                            or (overlap_zone > 0.20)
+                        ):
+                            table_people.append(det)
+                            in_zone_dets.append(det)
+                    elif det.class_name in TABLEWARE_CLASSES or det.class_name in zone.target_classes:
+                        if (
+                            zone.contains_point(cx, cy, frame_w, frame_h)
+                            or zone.contains_point(bx, by, frame_w, frame_h)
+                            or overlap_zone > 0.05
+                        ):
+                            table_dirty.append(det)
+                            in_zone_dets.append(det)
+
+                # Temporal history for table states
+                hist_p = self.zone_person_history[zone.zone_id]
+                hist_p.append(len(table_people) > 0)
+                p_ratio = sum(1 for h in hist_p if h) / max(1, len(hist_p))
+
+                hist_t = self.zone_tableware_history[zone.zone_id]
+                hist_t.append(len(table_dirty) > 0)
+                t_ratio = sum(1 for h in hist_t if h) / max(1, len(hist_t))
+
+                hist = self.zone_occupancy_history[zone.zone_id]
+                hist.append(len(in_zone_dets) > 0)
+
+                if len(hist_p) < 2:
+                    smoothed_state = "UNCERTAIN"
+                    table_state = "uncertain"
+                elif p_ratio >= 0.50:
+                    smoothed_state = "OCCUPIED"
+                    table_state = "occupied"
+                elif t_ratio >= 0.50:
+                    smoothed_state = "OCCUPIED"
+                    table_state = "unoccupied-dirty"
+                else:
+                    smoothed_state = "NOT OCCUPIED"
+                    table_state = "unoccupied-clean"
+
+                results["zone_states"][zone.zone_id] = {
+                    "name": zone.name,
+                    "type": zone.zone_type,
+                    "state": smoothed_state,
+                    "table_state": table_state,
+                    "dirty_items": [d.class_name for d in table_dirty],
+                    "count": len(table_people),
+                    "detections": in_zone_dets,
+                }
+
+                if table_state == "unoccupied-dirty":
+                    dirty_names = ", ".join(set(d.class_name for d in table_dirty)) or "tableware"
+                    results["active_alerts"].append({
+                        "severity": "WARNING",
+                        "type": "TABLE_NEEDS_CLEANING",
+                        "message": f"DIRTY TABLE in '{zone.name}': {dirty_names} left behind",
+                        "zone_id": zone.zone_id,
+                    })
+
+            else:
+                # Floor / Restricted / Queue / General: STRICT ground-contact feet test
+                for det in detections:
+                    if det.class_name not in zone.target_classes and "all" not in zone.target_classes:
+                        continue
+                    bx, by = det.bottom_center
+                    if zone.contains_point(bx, by, frame_w, frame_h):
                         in_zone_dets.append(det)
 
-            # Temporal smoothing for occupancy state
-            is_raw_present = len(in_zone_dets) > 0
-            hist = self.zone_occupancy_history[zone.zone_id]
-            hist.append(is_raw_present)
+                hist = self.zone_occupancy_history[zone.zone_id]
+                hist.append(len(in_zone_dets) > 0)
+                true_ratio = sum(1 for h in hist if h) / max(1, len(hist))
 
-            true_ratio = sum(1 for h in hist if h) / max(1, len(hist))
-            if len(hist) < 3:
-                smoothed_state = "UNCERTAIN"
-            elif true_ratio >= 0.60:
-                smoothed_state = "OCCUPIED"
-            elif true_ratio <= 0.40:
-                smoothed_state = (
-                    "AVAILABLE" if zone.zone_type == "parking" else "NOT OCCUPIED"
-                )
-            else:
-                smoothed_state = "UNCERTAIN"
+                min_samples = min(2, self.debounce_window)
+                if len(hist) < min_samples:
+                    smoothed_state = "UNCERTAIN"
+                elif true_ratio >= 0.60:
+                    smoothed_state = "OCCUPIED"
+                elif true_ratio <= 0.40:
+                    smoothed_state = "NOT OCCUPIED"
+                else:
+                    smoothed_state = "UNCERTAIN"
 
-            results["zone_states"][zone.zone_id] = {
-                "name": zone.name,
-                "type": zone.zone_type,
-                "state": smoothed_state,
-                "count": len(in_zone_dets),
-                "detections": in_zone_dets,
-            }
+                results["zone_states"][zone.zone_id] = {
+                    "name": zone.name,
+                    "type": zone.zone_type,
+                    "state": smoothed_state,
+                    "count": len(in_zone_dets),
+                    "detections": in_zone_dets,
+                }
 
             # ── 2. Use-Case Rules per Zone ────────────────────────────────────
 
@@ -648,7 +743,7 @@ def get_preset_zones(mode: str) -> List[LenzZone]:
                 name="Monitored Table",
                 zone_type="table",
                 norm_bbox=(0.22, 0.32, 0.78, 0.88),
-                target_classes={"person", "laptop", "bottle", "cup", "cell phone"},
+                target_classes={"person", "laptop", "bottle", "cup", "cell phone", "wine glass", "bowl", "plate", "fork", "knife", "spoon"},
                 color=COLOR_SAFE_GREEN,
             )
         ]

@@ -1,0 +1,9 @@
+path: datasets/lenz_table_condition
+train: images/train
+val: images/val
+test: images/test
+nc: 3
+names:
+  0: occupied
+  1: unoccupied-clean
+  2: unoccupied-dirty

@@ -17,14 +17,21 @@ logger = logging.getLogger(__name__)
 # COCO class names we care about
 PERSON_CLASS = "person"
 
+# Vehicles for parking, traffic, and access monitoring
+VEHICLE_CLASSES = {"car", "motorcycle", "bicycle", "bus", "truck"}
+
 # Objects that indicate someone is sitting purposefully (anti-idle evidence)
 PURPOSEFUL_OBJECTS = {"cup", "bottle", "bowl", "laptop", "book", "cell phone", "keyboard"}
 
-# Objects that indicate "dirty / unattended" zone
+# Objects that indicate "dirty / unattended" zone or table condition
 UNATTENDED_OBJECTS = {"cup", "bottle", "bowl", "plate", "fork", "knife", "spoon", "wine glass"}
+TABLEWARE_OBJECTS = {"cup", "bottle", "bowl", "plate", "fork", "knife", "spoon", "wine glass"}
 
 # Safety-related objects
 SAFETY_OBJECTS = {"backpack", "suitcase", "handbag"}
+
+# Furniture
+FURNITURE_CLASSES = {"chair", "couch", "bed", "dining table", "bench"}
 
 
 @dataclass
@@ -70,6 +77,8 @@ class FrameResult:
     frame_index: int
     video_time: float
     persons: List[Detection] = field(default_factory=list)
+    vehicles: List[Detection] = field(default_factory=list)
+    tableware: List[Detection] = field(default_factory=list)
     objects: List[Detection] = field(default_factory=list)
     poses: List[PoseResult] = field(default_factory=list)
     raw_frame: Optional[np.ndarray] = None   # resized BGR frame
@@ -148,6 +157,10 @@ class Detector:
                     result.persons.append(det)
                 else:
                     result.objects.append(det)
+                    if cls_name in VEHICLE_CLASSES:
+                        result.vehicles.append(det)
+                    if cls_name in TABLEWARE_OBJECTS:
+                        result.tableware.append(det)
 
         # ── Pose estimation ──────────────────────────────────────────────────
         if self._pose_model is not None:

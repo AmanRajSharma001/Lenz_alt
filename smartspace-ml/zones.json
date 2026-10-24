@@ -43,5 +43,20 @@
     "max_people": 0,
     "loiter_s": 10,
     "active": true
+  },
+  {
+    "camera_id": "cam_01",
+    "name": "Parking Bay 01",
+    "type": "parking",
+    "polygon": [
+      [0.10, 0.75],
+      [0.45, 0.75],
+      [0.45, 0.98],
+      [0.10, 0.98]
+    ],
+    "idle_limit_s": 300,
+    "max_people": 0,
+    "loiter_s": 300,
+    "active": true
   }
 ]
