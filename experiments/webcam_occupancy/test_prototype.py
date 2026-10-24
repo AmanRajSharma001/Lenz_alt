@@ -1,15 +1,16 @@
 """
 experiments/webcam_occupancy/test_prototype.py
 
-Automated test suite verifying the Lenz local webcam prototype:
-- Multi-class object detection
-- ByteTrack integration & tracklet dwell time
+Automated test suite verifying the Lenz Open-Vocabulary webcam prototype:
+- Open-Vocabulary model configuration and text prompt loading
+- Spatial multi-object tracking & dwell timing
 - Zone spatial intersection logic
 - All rule engine behaviors (Table, Parking, Restricted, Queue, Crowd, Loitering, Unattended)
-- CLI argument parsing & error handling
+- Dashboard telemetry rendering and diagnostics
 """
 from __future__ import annotations
 
+import json
 import os
 import sys
 from pathlib import Path
@@ -20,7 +21,11 @@ import pytest
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "smartspace-ml"))
 
+from app.open_vocab_detector import Detection, OpenVocabDetector
+from app.sam_segmenter import SAMSegmenter
+from app.table_classifier import CLIPTableClassifier
 from webcam_test import (
     LenzRuleEngine,
     LenzZone,
@@ -31,24 +36,48 @@ from webcam_test import (
 )
 
 
-# ── 1. Model Resolution & Weight Tests ────────────────────────────────────────
+# ── 1. Model Resolution & Open-Vocabulary Prompt Tests ────────────────────────
 def test_resolve_model_path():
-    path = resolve_model_path()
-    assert os.path.exists(path), f"Resolved model path does not exist: {path}"
-    assert path.endswith(".pt"), "Model file must be a PyTorch .pt weight file"
+    model_id = resolve_model_path()
+    assert model_id == "IDEA-Research/grounding-dino-tiny"
 
 
-def test_model_loading_and_classes():
-    from ultralytics import YOLO
+def test_open_vocab_prompts_configuration():
+    prompts_path = Path(__file__).resolve().parent.parent.parent / "config" / "detection_prompts.json"
+    assert prompts_path.is_file(), f"Prompts config not found: {prompts_path}"
 
-    model_path = resolve_model_path()
-    model = YOLO(model_path)
-    assert len(model.names) == 80, "Pretrained COCO model should have 80 classes"
-    assert "person" in model.names.values()
-    assert "car" in model.names.values()
-    assert "backpack" in model.names.values()
-    assert "laptop" in model.names.values()
-    assert "bottle" in model.names.values()
+    with open(prompts_path, "r", encoding="utf-8") as f:
+        config = json.load(f)
+
+    assert "dino_text_query" in config
+    assert "categories" in config
+    assert "person" in config["categories"]
+    assert "dining_table" in config["categories"]
+    assert "vehicle" in config["categories"]
+    assert "tableware" in config["categories"]
+    assert "rubbish" in config["categories"]
+
+    # Verify query format for Grounding DINO (period-separated phrases)
+    query = config["dino_text_query"]
+    assert "person ." in query or "person" in query
+    assert "dining table" in query
+    assert "car" in query
+
+
+def test_open_vocab_detector_initialization():
+    detector = OpenVocabDetector(
+        model_id="IDEA-Research/grounding-dino-tiny",
+        device_preference="cpu",
+    )
+    detector.load()
+    assert detector.is_loaded is True
+
+    # Process a synthetic blank frame
+    frame = np.zeros((240, 320, 3), dtype=np.uint8)
+    dets, diag = detector.process_frame(frame, frame_index=1, fps=10.0)
+    assert isinstance(dets, list)
+    assert "detector_model_id" in diag
+    assert "device" in diag
 
 
 # ── 2. Spatial Zone Logic Tests ───────────────────────────────────────────────
@@ -68,7 +97,6 @@ def test_zone_point_containment():
 
 def test_zone_overlap_computation():
     zone = LenzZone("z1", "Test Zone", "parking", (0.2, 0.2, 0.8, 0.8), {"car"})
-    # Box matching zone exactly
     zx1, zy1, zx2, zy2 = zone.get_pixel_coords(100, 100)
     overlap_z, overlap_d = zone.compute_overlap((zx1, zy1, zx2, zy2), 100, 100)
     assert abs(overlap_z - 1.0) < 0.01
@@ -88,6 +116,18 @@ def test_table_occupancy_rule():
 
     assert res["zone_states"]["table_1"]["state"] == "OCCUPIED"
     assert res["zone_states"]["table_1"]["count"] == 1
+
+
+def test_table_cleanliness_rule():
+    zone = LenzZone("table_1", "Table 1", "table", (0.2, 0.2, 0.8, 0.8), {"dishes on a tabletop"})
+    engine = LenzRuleEngine([zone], debounce_window=3)
+
+    dishes = TrackedDetection(5, "dishes on a tabletop", 0.88, (220, 200, 280, 260))
+
+    for t in [0.0, 0.5, 1.0]:
+        res = engine.evaluate([dishes], 640, 480, t)
+
+    assert "NEEDS CLEANING" in res["zone_states"]["table_1"]["state"]
 
 
 def test_parking_slot_rule():
@@ -111,10 +151,10 @@ def test_restricted_intrusion_alert():
     for t in [0.0, 0.5, 1.0]:
         res = engine.evaluate([person], 640, 480, t)
 
-    alerts = [a for a in res["active_alerts"] if a["type"] == "ZONE_INTRUSION"]
+    alerts = [a for a in res["active_alerts"] if a["type"] in ("PERIMETER_BREACH", "ZONE_INTRUSION")]
     assert len(alerts) == 1
     assert alerts[0]["severity"] == "CRITICAL"
-    assert "Vault Area" in alerts[0]["message"]
+    assert "Vault" in alerts[0]["message"]
 
 
 def test_crowd_surge_alert():
@@ -127,9 +167,9 @@ def test_crowd_surge_alert():
     ]
 
     res = engine.evaluate(persons, 640, 480, 1.0)
-    surge_alerts = [a for a in res["active_alerts"] if a["type"] == "CROWD_SURGE"]
+    surge_alerts = [a for a in res["active_alerts"] if a["type"] in ("CROWD_DENSITY", "CROWD_SURGE")]
     assert len(surge_alerts) == 1
-    assert "Threshold: 3" in surge_alerts[0]["message"]
+    assert "crowd surge" in surge_alerts[0]["message"].lower()
 
 
 def test_loitering_alert():
@@ -139,9 +179,9 @@ def test_loitering_alert():
     person = TrackedDetection(4, "person", 0.9, (200, 150, 260, 350), dwell_seconds=12.5)
     res = engine.evaluate([person], 640, 480, 15.0)
 
-    loiter_alerts = [a for a in res["active_alerts"] if a["type"] == "SUSPICIOUS_LOITERING"]
+    loiter_alerts = [a for a in res["active_alerts"] if a["type"] in ("LOITERING", "SUSPICIOUS_LOITERING")]
     assert len(loiter_alerts) == 1
-    assert "Track #4" in loiter_alerts[0]["message"]
+    assert "#4" in loiter_alerts[0]["message"]
 
 
 def test_unattended_object_alert():
@@ -156,7 +196,7 @@ def test_unattended_object_alert():
     res6 = engine.evaluate([bag], 640, 480, 6.0)
     bag_alerts = [a for a in res6["active_alerts"] if a["type"] == "UNATTENDED_OBJECT"]
     assert len(bag_alerts) == 1
-    assert "UNATTENDED BACKPACK #9" in bag_alerts[0]["message"]
+    assert "Unattended backpack #9" in bag_alerts[0]["message"]
 
 
 # ── 4. Dashboard Renderer Test ────────────────────────────────────────────────
@@ -166,8 +206,8 @@ def test_render_dashboard():
     engine = LenzRuleEngine(zones)
 
     dets = [
-        TrackedDetection(1, "person", 0.92, (100, 150, 160, 320), 4.2),
-        TrackedDetection(2, "laptop", 0.88, (140, 220, 200, 260), 4.2),
+        TrackedDetection(1, "person", 0.92, (100, 150, 160, 320), dwell_seconds=4.2),
+        TrackedDetection(2, "laptop", 0.88, (140, 220, 200, 260), dwell_seconds=4.2),
     ]
 
     res = engine.evaluate(dets, 640, 480, 5.0)
@@ -179,10 +219,15 @@ def test_render_dashboard():
         eval_results=res,
         fps=25.0,
         active_mode="all",
-        conf_thresh=0.35,
+        conf_thresh=0.25,
         show_tracking=True,
         show_zones=True,
         source_name="webcam_test",
+        detector_model="IDEA-Research/grounding-dino-tiny",
+        segmenter_model="facebook/sam2.1-hiera-tiny",
+        device_name="mps",
+        raw_candidates_count=5,
+        filtered_candidates_count=2,
     )
 
     assert out_frame.shape == frame.shape

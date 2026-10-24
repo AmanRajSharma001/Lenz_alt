@@ -22,10 +22,12 @@ Lenz is an AI-powered video intelligence platform that transforms standard CCTV 
 
 ## Core Capabilities
 
-### 1. Multi-Class Object Detection & Tracking
-- Real-time detection across **80 COCO object classes** using YOLO
-- ByteTrack multi-object tracking with persistent IDs and dwell time measurement
-- Person, vehicle, luggage, electronics, and furniture detection
+### 1. Open-Vocabulary Object Detection & Tracking
+- Real-time zero-shot prompt-based detection using `IDEA-Research/grounding-dino-tiny`
+- Pixel-level segmentation refinement via `facebook/sam2.1-hiera-tiny`
+- Zero-shot region condition intelligence via `openai/clip-vit-base-patch32`
+- Deterministic spatial tracking with persistent track IDs (`#ID`) and dwell-time measurement
+- Detection across open-vocabulary descriptions (people, vehicles, tables, tableware, rubbish, electronics, luggage) configured in `config/detection_prompts.json`
 
 ### 2. Zone-Based Spatial Intelligence
 - Configurable polygon monitoring zones per camera
@@ -124,9 +126,9 @@ pip install -r requirements.txt
 python webcam_test.py
 ```
 
-Press **Q** to quit. The script downloads `yolo11n.pt` (~5 MB) on first run via `ultralytics`.
+Press **Q** to quit.
 
-See [`experiments/webcam_occupancy/README.md`](experiments/webcam_occupancy/README.md) for full configuration options.
+See [`experiments/webcam_occupancy/README.md`](experiments/webcam_occupancy/README.md) for full configuration options, diagnostics exports, and modes.
 
 ### SmartSpace ML Pipeline
 
@@ -136,7 +138,6 @@ python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env               # Edit .env for your configuration
-python make_test_video.py          # Generate sample.mp4 test video
 python run_demo.py                 # Run CLI demo
 ```
 
@@ -144,14 +145,15 @@ See [`smartspace-ml/README.md`](smartspace-ml/README.md) for API server startup,
 
 ---
 
-## Model Weights
+## Open-Vocabulary Model Stack
 
-YOLO model weights (`*.pt`) are **not committed to this repository** — they are large binaries that are automatically downloaded by `ultralytics` on first run.
+Large pretrained model checkpoints are managed through Hugging Face Hub cache (`~/.cache/huggingface/hub`) rather than committed to Git:
 
-| Model | Size | Download |
-|---|---|---|
-| `yolo11n.pt` | ~5.4 MB | Auto-downloaded by ultralytics |
-| `yolov8n.pt` | ~6.5 MB | Auto-downloaded by ultralytics |
+| Model Role | Model ID | Framework | Purpose |
+|---|---|---|---|
+| **Zero-Shot Object Detection** | `IDEA-Research/grounding-dino-tiny` | Hugging Face Transformers | Open-vocabulary candidate detection from natural text prompts |
+| **Pixel-Level Segmentation** | `facebook/sam2.1-hiera-tiny` | Hugging Face Transformers | Exact pixel mask boundaries for vehicle parking & table surfaces |
+| **Table Condition Intelligence** | `openai/clip-vit-base-patch32` | Hugging Face Transformers | Zero-shot cleanliness & occupancy classification on cropped tables |
 
 ---
 

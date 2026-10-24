@@ -31,7 +31,10 @@ smartspace-ml/
 │   ├── __init__.py
 │   ├── config.py          # Settings loaded from .env
 │   ├── db.py              # SQLite schema, migrations & CRUD helpers
-│   ├── detector.py        # YOLOv8 detection + ByteTrack tracking wrapper
+│   ├── detector.py        # Open-Vocabulary detection (Grounding DINO), SAM 2.1, CLIP & spatial tracking
+│   ├── open_vocab_detector.py # Hugging Face Grounding DINO detector & SpatialTracker
+│   ├── sam_segmenter.py   # SAM / SAM 2 pixel-level segmentation mask engine
+│   ├── table_classifier.py # Zero-shot CLIP table condition classifier
 │   ├── gemma.py           # Local Gemma client (Mock, Transformers, LlamaCpp)
 │   ├── incidents.py       # Rolling buffer + evidence clip packager & hasher
 │   ├── main.py            # FastAPI REST, WebSocket & MJPEG application

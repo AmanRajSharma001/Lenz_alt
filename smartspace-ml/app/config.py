@@ -11,8 +11,6 @@ from dotenv import load_dotenv
 
 load_dotenv(dotenv_path=Path(__file__).parent.parent / ".env", override=False)
 
-os.environ.setdefault("YOLO_CONFIG_DIR", "/tmp/ultralytics")
-
 
 def _bool(key: str, default: bool = False) -> bool:
     return os.getenv(key, str(default)).lower() in ("1", "true", "yes")
@@ -26,38 +24,6 @@ def _float(key: str, default: float) -> float:
     return float(os.getenv(key, default))
 
 
-def _resolve_model_path(model_name: str) -> str:
-    """
-    Resolves local model weights by searching common project locations.
-    Prevents unnecessary offline download attempts.
-    """
-    # 1. Exact path if exists
-    p = Path(model_name)
-    if p.is_file():
-        return str(p.resolve())
-    
-    # 2. Relative to smartspace-ml/
-    base_dir = Path(__file__).resolve().parent.parent
-    candidate = base_dir / model_name
-    if candidate.is_file():
-        return str(candidate)
-    
-    # 3. In experiments/webcam_occupancy/
-    repo_root = base_dir.parent
-    candidate = repo_root / "experiments" / "webcam_occupancy" / model_name
-    if candidate.is_file():
-        return str(candidate)
-
-    # 4. Fallback search in repo
-    for fn in [model_name, "yolo11n.pt", "yolov8n.pt"]:
-        matches = list(repo_root.glob(f"**/{fn}"))
-        for m in matches:
-            if m.is_file() and not any(part.startswith(".") for part in m.parts):
-                return str(m.resolve())
-
-    return model_name
-
-
 class Settings:
     # ── Video ─────────────────────────────────────────────────────
     VIDEO_SOURCE: str = os.getenv("VIDEO_SOURCE", "sample.mp4")
@@ -65,13 +31,15 @@ class Settings:
     PROCESS_FPS: int = _int("PROCESS_FPS", 5)
     FRAME_WIDTH: int = _int("FRAME_WIDTH", 640)
 
-    # ── YOLO ──────────────────────────────────────────────────────
-    YOLO_WEIGHTS: str = _resolve_model_path(os.getenv("YOLO_WEIGHTS", "yolov8n.pt"))
-    POSE_WEIGHTS: str = os.getenv("POSE_WEIGHTS", "yolov8n-pose.pt")
-    YOLO_DEVICE: str = os.getenv("YOLO_DEVICE", "auto")
-    YOLO_CONF: float = _float("YOLO_CONF", 0.35)
-    YOLO_IOU: float = _float("YOLO_IOU", 0.45)
-    POSE_ENABLED: bool = _bool("POSE_ENABLED", True)
+    # ── Open-Vocabulary Vision Stack ──────────────────────────────
+    GROUNDING_DINO_MODEL: str = os.getenv("GROUNDING_DINO_MODEL", "IDEA-Research/grounding-dino-tiny")
+    SAM_MODEL: str = os.getenv("SAM_MODEL", "facebook/sam2.1-hiera-tiny")
+    CLIP_MODEL: str = os.getenv("CLIP_MODEL", "openai/clip-vit-base-patch32")
+    PROMPTS_CONFIG_PATH: str = os.getenv("PROMPTS_CONFIG_PATH", "config/detection_prompts.json")
+    DEVICE_PREFERENCE: str = os.getenv("DEVICE_PREFERENCE", "auto")
+    DETECTION_CONFIDENCE: float = _float("DETECTION_CONFIDENCE", 0.25)
+    SEGMENTATION_ENABLED: bool = _bool("SEGMENTATION_ENABLED", True)
+    TABLE_CLASSIFICATION_ENABLED: bool = _bool("TABLE_CLASSIFICATION_ENABLED", True)
 
     # ── Zone state-machine ────────────────────────────────────────
     OCCUPY_ENTER_S: float = _float("OCCUPY_ENTER_S", 2.0)

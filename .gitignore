@@ -56,6 +56,8 @@ smartspace.db
 # ─── Generated Evidence Clips & Outputs ────────────────────────────────────
 smartspace-ml/evidence/*
 !smartspace-ml/evidence/.gitkeep
+evidence/*
+!evidence/.gitkeep
 
 # ─── Operating System & IDE Files ───────────────────────────────────────────
 .DS_Store

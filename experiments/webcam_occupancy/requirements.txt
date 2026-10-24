@@ -1,5 +1,8 @@
-# Minimal dependencies for Lenz Webcam Occupancy Proof-of-Concept
-opencv-python>=4.8.0
-ultralytics>=8.0.0
+# Minimal dependencies for Lenz Open-Vocabulary Vision Prototype
 torch>=2.0.0
+transformers>=4.40.0
+accelerate>=0.28.0
+opencv-python>=4.8.0
 numpy>=1.23.0
+Pillow>=10.0.0
+pytest>=8.0.0

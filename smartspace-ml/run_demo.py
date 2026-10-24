@@ -20,8 +20,7 @@ from pathlib import Path
 # ── Environment defaults for demo ──────────────────────────────────────────────
 os.environ.setdefault("GEMMA_MODE", "mock")
 os.environ.setdefault("PROCESS_FPS", "5")
-os.environ.setdefault("YOLO_WEIGHTS", "yolov8n.pt")
-os.environ.setdefault("POSE_ENABLED", "false")   # speed up demo on CPU
+os.environ.setdefault("GROUNDING_DINO_MODEL", "IDEA-Research/grounding-dino-tiny")
 
 # ── Bootstrap ─────────────────────────────────────────────────────────────────
 from app.config import settings
